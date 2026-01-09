@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bộ tài liệu trắc nghiệm by NLDK</title>
-    <meta name="google-site-verification" content="My2FMkXN0zLpa4bcrT_kLvCcQdKkzOtDKpgcK1Ze_Fo" />
+    <title>Trắc nghiệm Online Pro - Mobile Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -184,6 +183,11 @@
                         Nộp bài
                     </button>
 
+                    <button id="btn-exit-review" onclick="exitHistoryReview()"
+                        class="hidden px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-bold shadow-md">
+                        Thoát xem lại
+                    </button>
+
                     <button onclick="nextQuestion()"
                         class="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1">
                         <span class="hidden md:inline">Sau</span> <i class="fa-solid fa-arrow-right"></i>
@@ -234,19 +238,28 @@
             </div>
         </div>
 
-        <div id="view-history" class="hidden view-section flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
-            <div class="max-w-4xl mx-auto mt-4">
-                <h3 class="text-xl font-bold text-center text-gray-800 mb-6 pb-2 border-b">
-                    Lịch sử: <span id="history-subject-name" class="text-blue-600"></span>
-                </h3>
-                <div id="history-list" class="space-y-3 pb-20"></div>
-                <div id="history-empty" class="hidden text-center py-10">
-                    <p class="text-gray-500">Chưa có bài làm nào.</p>
-                </div>
-            </div>
+     <div id="view-history" class="hidden view-section flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
+    <div class="max-w-4xl mx-auto mt-4">
+        <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-300">
+            <h3 class="text-xl font-bold text-gray-800">
+                Lịch sử: <span id="history-subject-name" class="text-blue-600"></span>
+            </h3>
+            
+            <button id="btn-clear-history" onclick="clearHistory()" 
+                class="hidden px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-md text-sm font-bold transition flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+            </button>
         </div>
 
-        <div class="mt-auto py-8 text-center border-t border-gray-200">
+        <div id="history-list" class="space-y-3 pb-20"></div>
+        
+        <div id="history-empty" class="hidden text-center py-10">
+            <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">Chưa có bài làm nào.</p>
+        </div>
+    </div>
+</div>
+        <div class="mt-auto py-3 text-center border-t border-gray-200">
             <p class="text-sm text-gray-500">
                 Phát triển bởi
                 <a href="#" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">NLDK</a>
@@ -255,67 +268,62 @@
         </div>
     </div>
 
-    <script>
-        const API_BASE_URL = 'api-proxy/Exam';
-        const SESSION_KEY = 'exam_ongoing_session';
+   <script>
+    const API_BASE_URL = 'http://tracnghiemapi.runasp.net/api/Exam';
+    const SESSION_KEY = 'exam_ongoing_session';
 
-        let danhSachMon = [], currentSubject = null, currentMode = null, questionList = [];
-        let currentIndex = 0, userAnswers = {}, timerInterval, timeLeft = 0, isReviewMode = false;
+    let danhSachMon = [], currentSubject = null, currentMode = null, questionList = [];
+    let currentIndex = 0, userAnswers = {}, timerInterval, timeLeft = 0, isReviewMode = false;
+    let isHistoryReview = false; // Biến cờ mới: Đang xem lại lịch sử
 
-        window.onload = function () {
-            renderSubjects();
-            checkAndRestoreSession();
-        };
+    window.onload = function () {
+        renderSubjects();
+        checkAndRestoreSession();
+    };
 
-        function togglePaletteMobile() {
-            const sidebar = document.getElementById('sidebar-palette');
-            // Trên mobile: class 'hidden' sẽ ẩn/hiện overlay
-            // Trên desktop: class 'md:flex' luôn giữ nó hiện (override hidden), nên toggle hidden không ảnh hưởng desktop layout
-            sidebar.classList.toggle('hidden');
+    // ... (Giữ nguyên các hàm togglePaletteMobile, showView, toggleReviewOptions) ...
+    function togglePaletteMobile() {
+        document.getElementById('sidebar-palette').classList.toggle('hidden');
+    }
+
+    function showView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+        document.getElementById(viewId).classList.remove('hidden');
+        if (viewId !== 'view-quiz') document.getElementById('sidebar-palette').classList.add('hidden');
+        
+        const btnBack = document.getElementById('btn-back-header');
+        const title = document.getElementById('header-title');
+
+        if (viewId === 'view-subjects') {
+            btnBack.classList.add('invisible');
+            title.innerText = "Trắc nghiệm Online";
+        } else {
+            btnBack.classList.remove('invisible');
+            if (currentSubject) title.innerText = currentSubject.name;
         }
+    }
 
-        function showView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-
-            // Reset sidebar state khi chuyển view
-            if (viewId !== 'view-quiz') {
-                document.getElementById('sidebar-palette').classList.add('hidden');
-            }
-
-            const btnBack = document.getElementById('btn-back-header');
-            const title = document.getElementById('header-title');
-
-            if (viewId === 'view-subjects') {
-                btnBack.classList.add('invisible');
-                title.innerText = "Trắc nghiệm Online";
-            } else {
-                btnBack.classList.remove('invisible');
-                if (currentSubject) title.innerText = currentSubject.name;
-            }
+    function toggleReviewOptions() {
+        const opts = document.getElementById('review-sub-options');
+        const icon = document.getElementById('icon-chevron');
+        if (opts.classList.contains('hidden')) {
+            opts.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            opts.classList.add('hidden');
+            icon.classList.remove('rotate-180');
         }
+    }
 
-        function toggleReviewOptions() {
-            const opts = document.getElementById('review-sub-options');
-            const icon = document.getElementById('icon-chevron');
-            if (opts.classList.contains('hidden')) {
-                opts.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                opts.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
-        }
-
-        // --- API & DATA ---
-        async function renderSubjects() {
-            const container = document.getElementById('subject-list');
-            container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i><p class="mt-2">Đang tải môn học...</p></div>';
-            try {
-                const response = await fetch(`${API_BASE_URL}/subjects`);
-                if (!response.ok) throw new Error("Lỗi kết nối");
-                danhSachMon = await response.json();
-                container.innerHTML = danhSachMon.map(mon => `
+    // --- API & DATA ---
+    async function renderSubjects() {
+        const container = document.getElementById('subject-list');
+        container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i><p class="mt-2">Đang tải môn học...</p></div>';
+        try {
+            const response = await fetch(`${API_BASE_URL}/subjects`);
+            if (!response.ok) throw new Error("Lỗi kết nối");
+            danhSachMon = await response.json();
+            container.innerHTML = danhSachMon.map(mon => `
                 <div onclick="selectSubject(${mon.id}, '${mon.ten}')" 
                      class="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden">
                     <div class="flex items-center gap-4">
@@ -327,257 +335,358 @@
                     </div>
                 </div>
             `).join('');
-            } catch (error) { container.innerHTML = `<div class="col-span-full text-center text-red-500">Lỗi tải dữ liệu.</div>`; }
-        }
+        } catch (error) { container.innerHTML = `<div class="col-span-full text-center text-red-500">Lỗi tải dữ liệu.</div>`; }
+    }
 
-        async function selectSubject(id, name) {
-            currentSubject = { id: id, name: name };
-            document.getElementById('selected-subject-name').innerText = name;
-            document.getElementById('history-subject-name').innerText = name;
-            document.getElementById('review-sub-options').classList.add('hidden');
-            document.getElementById('icon-chevron').classList.remove('rotate-180');
-            await loadChapters(id);
-            showView('view-modes');
-        }
+    async function selectSubject(id, name) {
+        currentSubject = { id: id, name: name };
+        document.getElementById('selected-subject-name').innerText = name;
+        document.getElementById('history-subject-name').innerText = name;
+        document.getElementById('review-sub-options').classList.add('hidden');
+        document.getElementById('icon-chevron').classList.remove('rotate-180');
+        await loadChapters(id);
+        showView('view-modes');
+    }
 
-        async function loadChapters(subjectId) {
-            const select = document.getElementById('chapter-select');
-            select.innerHTML = '<option>Đang tải...</option>';
-            try {
-                const res = await fetch(`${API_BASE_URL}/chapters/${subjectId}`);
-                const chapters = await res.json();
-                select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            } catch (e) { select.innerHTML = '<option>Lỗi tải chương</option>'; }
-        }
+    async function loadChapters(subjectId) {
+        const select = document.getElementById('chapter-select');
+        select.innerHTML = '<option>Đang tải...</option>';
+        try {
+            const res = await fetch(`${API_BASE_URL}/chapters/${subjectId}`);
+            const chapters = await res.json();
+            select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        } catch (e) { select.innerHTML = '<option>Lỗi tải chương</option>'; }
+    }
 
-        async function setupExam(mode) {
-            currentMode = mode;
-            isReviewMode = mode.startsWith('on_');
-            document.getElementById('question-text').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải đề thi...';
-            document.getElementById('answer-container').innerHTML = "";
-            showView('view-quiz');
+    async function setupExam(mode) {
+        currentMode = mode;
+        isReviewMode = mode.startsWith('on_');
+        isHistoryReview = false; // Reset cờ xem lịch sử
 
-            let url = `${API_BASE_URL}/generate?subjectId=${currentSubject.id}&mode=${mode}`;
-            if (mode === 'on_chuong') url += `&chapterId=${document.getElementById('chapter-select').value}`;
+        document.getElementById('question-text').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải đề thi...';
+        document.getElementById('answer-container').innerHTML = "";
+        
+        // UI Reset
+        document.getElementById('btn-submit').classList.remove('hidden');
+        document.getElementById('btn-exit-review').classList.add('hidden');
+        
+        showView('view-quiz');
 
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(await res.text());
-                questionList = await res.json();
-                if (questionList.length === 0) { alert("Không tìm thấy câu hỏi!"); goBack(); return; }
+        let url = `${API_BASE_URL}/generate?subjectId=${currentSubject.id}&mode=${mode}`;
+        if (mode === 'on_chuong') url += `&chapterId=${document.getElementById('chapter-select').value}`;
 
-                currentIndex = 0; userAnswers = {};
-                let thoiGianPhut = (mode === 'thithu') ? 60 : 0;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(await res.text());
+            questionList = await res.json();
+            if (questionList.length === 0) { alert("Không tìm thấy câu hỏi!"); goBack(); return; }
 
-                // Text nút nộp bài
-                const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
-                document.getElementById('btn-submit').innerHTML = btnText;
+            currentIndex = 0; userAnswers = {};
+            let thoiGianPhut = (mode === 'thithu') ? 60 : 0;
 
-                renderQuestion();
-                if (thoiGianPhut > 0) { timeLeft = thoiGianPhut * 60; startTimer(); }
-                else { document.getElementById('quiz-timer').innerText = "∞"; }
-                saveCurrentSession();
-            } catch (error) { alert("Lỗi: " + error.message); goBack(); }
-        }
+            const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
+            document.getElementById('btn-submit').innerHTML = btnText;
 
-        function renderQuestion() {
-            const q = questionList[currentIndex];
-            const userChoice = userAnswers[currentIndex];
+            renderQuestion();
+            if (thoiGianPhut > 0) { timeLeft = thoiGianPhut * 60; startTimer(); }
+            else { document.getElementById('quiz-timer').innerText = "∞"; }
+            saveCurrentSession();
+        } catch (error) { alert("Lỗi: " + error.message); goBack(); }
+    }
 
-            document.getElementById('quiz-scroll-area').scrollTop = 0;
+    // --- LOGIC RENDER CÂU HỎI (QUAN TRỌNG) ---
+    function renderQuestion() {
+        const q = questionList[currentIndex];
+        const userChoice = userAnswers[currentIndex];
+        
+        // Xác định xem có phải đang ở chế độ xem kết quả (Ôn tập hoặc Xem lịch sử) không
+        const isViewer = isReviewMode || isHistoryReview; 
 
-            const doneCount = Object.keys(userAnswers).length;
-            const total = questionList.length;
-            document.getElementById('progress-text-top').innerText = `${doneCount}/${total}`;
-            document.getElementById('palette-progress').innerText = `${doneCount}/${total}`;
+        document.getElementById('quiz-scroll-area').scrollTop = 0;
 
-            document.getElementById('question-text').innerText = `Câu ${currentIndex + 1}: ${q.text}`;
-            document.getElementById('explanation-area').classList.add('hidden');
+        const doneCount = Object.keys(userAnswers).length;
+        const total = questionList.length;
+        document.getElementById('progress-text-top').innerText = `${doneCount}/${total}`;
+        document.getElementById('palette-progress').innerText = `${doneCount}/${total}`;
 
-            const container = document.getElementById('answer-container');
-            container.innerHTML = q.answers.map(ans => {
-                let baseClass = "block w-full text-left p-3 md:p-4 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3 select-none text-base";
-                let statusClass = "border-gray-200 hover:border-blue-300 bg-white text-gray-700";
-                let radioChecked = "";
-                let icon = "";
+        document.getElementById('question-text').innerText = `Câu ${currentIndex + 1}: ${q.text}`;
+        document.getElementById('explanation-area').classList.add('hidden');
 
-                if (userChoice) {
-                    if (userChoice === ans.key) {
-                        radioChecked = "checked";
-                        statusClass = "border-blue-500 bg-blue-50 ring-1 ring-blue-500 text-blue-800 font-medium";
-                    }
-                    if (isReviewMode) {
-                        if (ans.key === q.correct) {
-                            statusClass = "border-green-500 bg-green-50 text-green-800 font-medium";
-                            icon = '<i class="fa-solid fa-check text-green-600 mt-1"></i>';
-                        } else if (userChoice === ans.key && userChoice !== q.correct) {
-                            statusClass = "border-red-400 bg-red-50 text-red-800";
-                            icon = '<i class="fa-solid fa-xmark text-red-600 mt-1"></i>';
-                        }
+        const container = document.getElementById('answer-container');
+        container.innerHTML = q.answers.map(ans => {
+            let baseClass = "block w-full text-left p-3 md:p-4 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3 select-none text-base";
+            let statusClass = "border-gray-200 hover:border-blue-300 bg-white text-gray-700";
+            let radioChecked = "";
+            let icon = "";
+
+            // Logic tô màu
+            if (userChoice) {
+                if (userChoice === ans.key) {
+                    radioChecked = "checked";
+                    statusClass = "border-blue-500 bg-blue-50 ring-1 ring-blue-500 text-blue-800 font-medium";
+                }
+                
+                // Nếu đang ở chế độ xem (Ôn tập hoặc Xem lại lịch sử) thì hiện màu Đúng/Sai
+                if (isViewer) {
+                    if (ans.key === q.correct) {
+                        statusClass = "border-green-500 bg-green-50 text-green-800 font-medium";
+                        icon = '<i class="fa-solid fa-circle-check text-green-600 text-xl mt-1"></i>';
+                    } else if (userChoice === ans.key && userChoice !== q.correct) {
+                        statusClass = "border-red-400 bg-red-50 text-red-800";
+                        icon = '<i class="fa-solid fa-circle-xmark text-red-600 text-xl mt-1"></i>';
                     }
                 }
-                const disabledAttr = (isReviewMode && userChoice) ? 'disabled' : '';
-                return `
-                <label class="${baseClass} ${statusClass}" onclick="chooseAnswer('${ans.key}')">
-                    <div class="mt-1"><input type="radio" name="answer_${currentIndex}" value="${ans.key}" class="accent-blue-600 w-4 h-4" ${radioChecked} ${disabledAttr}></div>
-                    <div class="flex-grow text-sm md:text-base"><span class="font-bold mr-1">${ans.key}.</span> ${ans.text}</div>
-                    <div>${icon}</div>
-                </label>
-            `;
-            }).join('');
-
-            if (isReviewMode && userChoice && q.explanation) {
-                document.getElementById('explanation-text').innerText = q.explanation;
-                document.getElementById('explanation-area').classList.remove('hidden');
             }
-            renderQuestionPalette();
+            
+            // Khóa input nếu đang xem lại
+            const disabledAttr = (isViewer && (userChoice || isHistoryReview)) ? 'disabled' : '';
+            
+            return `
+            <label class="${baseClass} ${statusClass}" onclick="chooseAnswer('${ans.key}')">
+                <div class="mt-1"><input type="radio" name="answer_${currentIndex}" value="${ans.key}" class="accent-blue-600 w-4 h-4" ${radioChecked} ${disabledAttr}></div>
+                <div class="flex-grow text-sm md:text-base"><span class="font-bold mr-1">${ans.key}.</span> ${ans.text}</div>
+                <div>${icon}</div>
+            </label>
+        `;
+        }).join('');
+
+        // Hiện giải thích
+        if (isViewer && (userChoice || isHistoryReview) && q.explanation) {
+            document.getElementById('explanation-text').innerText = q.explanation;
+            document.getElementById('explanation-area').classList.remove('hidden');
         }
+        renderQuestionPalette();
+    }
 
-        function renderQuestionPalette() {
-            const paletteContainer = document.getElementById('question-palette');
-            paletteContainer.innerHTML = questionList.map((_, idx) => {
-                let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
-                if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
-                else if (userAnswers[idx]) classes += "bg-blue-500 border-blue-600 text-white";
-                else classes += "bg-white border-gray-300 text-gray-600";
-
-                // Thêm hàm đóng palette mobile khi chọn câu
-                return `<button onclick="jumpToQuestion(${idx})" class="${classes}">${idx + 1}</button>`;
-            }).join('');
-        }
-
-        function jumpToQuestion(index) {
-            currentIndex = index;
-            renderQuestion();
-            saveCurrentSession();
-            // Nếu đang ở mobile thì đóng palette sau khi chọn
-            if (window.innerWidth < 768) togglePaletteMobile();
-        }
-
-        function chooseAnswer(key) {
-            if (isReviewMode && userAnswers[currentIndex]) return;
-            userAnswers[currentIndex] = key;
-            renderQuestion();
-            saveCurrentSession();
-        }
-
-        function nextQuestion() {
-            if (currentIndex < questionList.length - 1) {
-                currentIndex++;
-                renderQuestion();
-                saveCurrentSession();
+    function renderQuestionPalette() {
+        const paletteContainer = document.getElementById('question-palette');
+        paletteContainer.innerHTML = questionList.map((_, idx) => {
+            let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
+            if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
+            else if (userAnswers[idx]) {
+                // Logic màu palette khi xem lại lịch sử
+                if (isHistoryReview) {
+                    const isCorrect = userAnswers[idx] === questionList[idx].correct;
+                    classes += isCorrect ? "bg-green-500 border-green-600 text-white" : "bg-red-500 border-red-600 text-white";
+                } else {
+                    classes += "bg-blue-500 border-blue-600 text-white";
+                }
             }
-        }
+            else classes += "bg-white border-gray-300 text-gray-600";
 
-        function prevQuestion() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderQuestion();
-                saveCurrentSession();
-            }
-        }
+            return `<button onclick="jumpToQuestion(${idx})" class="${classes}">${idx + 1}</button>`;
+        }).join('');
+    }
 
-        function goBack() {
-            if (!document.getElementById('view-quiz').classList.contains('hidden')) {
-                if (!confirm("Thoát bài sẽ mất kết quả chưa lưu. Tiếp tục?")) return;
-                clearInterval(timerInterval);
-                clearSession();
-            }
-            if (!document.getElementById('view-modes').classList.contains('hidden')) {
-                currentSubject = null;
-                showView('view-subjects');
-            } else {
-                showView('view-modes');
-            }
-        }
+    // ... (Giữ nguyên jumpToQuestion, chooseAnswer, nextQuestion, prevQuestion) ...
+    function jumpToQuestion(index) {
+        currentIndex = index;
+        renderQuestion();
+        if(!isHistoryReview) saveCurrentSession();
+        if (window.innerWidth < 768) togglePaletteMobile();
+    }
 
-        function startTimer() {
+    function chooseAnswer(key) {
+        // Nếu đang xem lịch sử thì không cho chọn
+        if (isHistoryReview) return;
+        if (isReviewMode && userAnswers[currentIndex]) return;
+        
+        userAnswers[currentIndex] = key;
+        renderQuestion();
+        saveCurrentSession();
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questionList.length - 1) { currentIndex++; renderQuestion(); if(!isHistoryReview) saveCurrentSession(); }
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) { currentIndex--; renderQuestion(); if(!isHistoryReview) saveCurrentSession(); }
+    }
+
+    function goBack() {
+        if (!document.getElementById('view-quiz').classList.contains('hidden')) {
+            // Nếu đang xem lịch sử thì thoát luôn không cần hỏi
+            if(isHistoryReview) {
+                exitHistoryReview();
+                return;
+            }
+            if (!confirm("Thoát bài sẽ mất kết quả chưa lưu. Tiếp tục?")) return;
             clearInterval(timerInterval);
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                saveCurrentSession();
-                if (timeLeft <= 0) { clearInterval(timerInterval); alert("Hết giờ làm bài!"); nopBai(true); }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            document.getElementById('quiz-timer').innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-        }
-
-        function saveCurrentSession() {
-            if (document.getElementById('view-quiz').classList.contains('hidden')) return;
-            const sessionData = {
-                subject: currentSubject, mode: currentMode, questions: questionList,
-                index: currentIndex, answers: userAnswers, time: timeLeft, isReview: isReviewMode,
-                timestamp: new Date().getTime()
-            };
-            localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-        }
-
-        function checkAndRestoreSession() {
-            const dataStr = localStorage.getItem(SESSION_KEY);
-            if (!dataStr) return;
-            const data = JSON.parse(dataStr);
-            if ((new Date().getTime() - data.timestamp) / (1000 * 60 * 60) > 24) { clearSession(); return; }
-            if (confirm(`Khôi phục bài thi môn: ${data.subject.name}?`)) {
-                currentSubject = data.subject; currentMode = data.mode; questionList = data.questions;
-                currentIndex = data.index; userAnswers = data.answers; timeLeft = data.time; isReviewMode = data.isReview;
-
-                document.getElementById('selected-subject-name').innerText = currentSubject.name;
-                document.getElementById('header-title').innerText = currentSubject.name;
-                const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
-                document.getElementById('btn-submit').innerHTML = btnText;
-
-                showView('view-quiz');
-                renderQuestion();
-                if (timeLeft > 0 && !isReviewMode) startTimer(); else if (isReviewMode) document.getElementById('quiz-timer').innerText = "∞";
-                document.getElementById('restore-notification').classList.remove('hidden');
-                setTimeout(() => { document.getElementById('restore-notification').classList.add('hidden'); }, 3000);
-            } else { clearSession(); }
-        }
-
-        function clearSession() { localStorage.removeItem(SESSION_KEY); }
-
-        function nopBai(force = false) {
-            if (!force && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
-            clearInterval(timerInterval);
-            let soCauDung = 0;
-            questionList.forEach((q, index) => { if (userAnswers[index] === q.correct) soCauDung++; });
-            let diem = (soCauDung / questionList.length) * 10;
-            saveHistory(currentSubject.id, soCauDung, questionList.length, diem);
-            alert(`KẾT QUẢ:\n- Số câu đúng: ${soCauDung}/${questionList.length}\n- Điểm số: ${diem.toFixed(2)}`);
             clearSession();
-            showHistoryView();
         }
-
-        function saveHistory(subjectId, correct, total, score) {
-            const key = `history_sub_${subjectId}`;
-            let history = JSON.parse(localStorage.getItem(key)) || [];
-            history.unshift({ date: new Date().toLocaleString('vi-VN'), mode: isReviewMode ? "Ôn tập" : "Thi thử", correct, total, score: score.toFixed(1) });
-            localStorage.setItem(key, JSON.stringify(history));
+        if (!document.getElementById('view-modes').classList.contains('hidden')) {
+            currentSubject = null;
+            showView('view-subjects');
+        } else {
+            showView('view-modes');
         }
+    }
 
-        function showHistoryView() {
+    // ... (Giữ nguyên startTimer, updateTimerDisplay) ...
+    function startTimer() {
+        clearInterval(timerInterval);
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            saveCurrentSession();
+            if (timeLeft <= 0) { clearInterval(timerInterval); alert("Hết giờ làm bài!"); nopBai(true); }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById('quiz-timer').innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+    }
+
+    function saveCurrentSession() {
+        if (document.getElementById('view-quiz').classList.contains('hidden')) return;
+        const sessionData = {
+            subject: currentSubject, mode: currentMode, questions: questionList,
+            index: currentIndex, answers: userAnswers, time: timeLeft, isReview: isReviewMode,
+            timestamp: new Date().getTime()
+        };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+    }
+
+    function checkAndRestoreSession() {
+        const dataStr = localStorage.getItem(SESSION_KEY);
+        if (!dataStr) return;
+        const data = JSON.parse(dataStr);
+        if ((new Date().getTime() - data.timestamp) / (1000 * 60 * 60) > 24) { clearSession(); return; }
+        if (confirm(`Khôi phục bài thi môn: ${data.subject.name}?`)) {
+            currentSubject = data.subject; currentMode = data.mode; questionList = data.questions;
+            currentIndex = data.index; userAnswers = data.answers; timeLeft = data.time; isReviewMode = data.isReview;
+            isHistoryReview = false; // Reset
+
+            document.getElementById('selected-subject-name').innerText = currentSubject.name;
+            document.getElementById('header-title').innerText = currentSubject.name;
+            const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
+            document.getElementById('btn-submit').innerHTML = btnText;
+            document.getElementById('btn-submit').classList.remove('hidden');
+            document.getElementById('btn-exit-review').classList.add('hidden');
+
+            showView('view-quiz');
+            renderQuestion();
+            if (timeLeft > 0 && !isReviewMode) startTimer(); else if (isReviewMode) document.getElementById('quiz-timer').innerText = "∞";
+            document.getElementById('restore-notification').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('restore-notification').classList.add('hidden'); }, 3000);
+        } else { clearSession(); }
+    }
+
+    function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+    function nopBai(force = false) {
+        if (!force && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+        clearInterval(timerInterval);
+        let soCauDung = 0;
+        questionList.forEach((q, index) => { if (userAnswers[index] === q.correct) soCauDung++; });
+        let diem = (soCauDung / questionList.length) * 10;
+        
+        // GỌI HÀM LƯU MỚI (LƯU CẢ CÂU HỎI VÀ ĐÁP ÁN)
+        saveHistory(currentSubject.id, soCauDung, questionList.length, diem, questionList, userAnswers);
+        
+        alert(`KẾT QUẢ:\n- Số câu đúng: ${soCauDung}/${questionList.length}\n- Điểm số: ${diem.toFixed(2)}`);
+        clearSession();
+        showHistoryView();
+    }
+
+    // --- CẬP NHẬT LOGIC LỊCH SỬ ---
+
+    // 1. Hàm lưu lịch sử mới (thêm questions và answers)
+    function saveHistory(subjectId, correct, total, score, questions, answers) {
+        const key = `history_sub_${subjectId}`;
+        let history = JSON.parse(localStorage.getItem(key)) || [];
+        history.unshift({ 
+            date: new Date().toLocaleString('vi-VN'), 
+            mode: isReviewMode ? "Ôn tập" : "Thi thử", 
+            correct, 
+            total, 
+            score: score.toFixed(1),
+            // Lưu dữ liệu chi tiết
+            questions: questions,
+            userAnswers: answers
+        });
+        // Giới hạn lưu 20 bài gần nhất để tránh đầy bộ nhớ
+        if(history.length > 20) history = history.slice(0, 20);
+        localStorage.setItem(key, JSON.stringify(history));
+    }
+
+    function showHistoryView() {
+        const key = `history_sub_${currentSubject.id}`;
+        const history = JSON.parse(localStorage.getItem(key)) || [];
+        
+        showView('view-history');
+        
+        const list = document.getElementById('history-list');
+        const empty = document.getElementById('history-empty');
+        const btnClear = document.getElementById('btn-clear-history'); // Lấy nút xóa
+
+        if (history.length === 0) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            btnClear.classList.add('hidden'); // Ẩn nút xóa nếu không có dữ liệu
+        } else {
+            empty.classList.add('hidden');
+            btnClear.classList.remove('hidden'); // Hiện nút xóa nếu có dữ liệu
+
+            list.innerHTML = history.map((item, index) => `
+            <div onclick="viewHistoryDetail(${index})" class="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+                <div>
+                    <div class="font-bold text-gray-800">${item.mode} <span class="text-xs font-normal text-gray-500">(Xem chi tiết)</span></div>
+                    <div class="text-xs text-gray-400 mt-1">${item.date}</div>
+                    <div class="text-sm mt-1">Đúng <b class="text-blue-600">${item.correct}/${item.total}</b> câu</div>
+                </div>
+                <div class="${item.score >= 5 ? 'bg-green-500' : 'bg-red-500'} text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-md">${item.score}</div>
+            </div>`).join('');
+        }
+    }
+
+    // 2. Hàm Xóa Lịch Sử (Mới thêm)
+    function clearHistory() {
+        if (confirm(`Bạn có chắc chắn muốn xóa toàn bộ lịch sử làm bài của môn "${currentSubject.name}" không?`)) {
             const key = `history_sub_${currentSubject.id}`;
-            const history = JSON.parse(localStorage.getItem(key)) || [];
-            showView('view-history');
-            const list = document.getElementById('history-list');
-            const empty = document.getElementById('history-empty');
-            if (history.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); }
-            else {
-                empty.classList.add('hidden');
-                list.innerHTML = history.map(item => `
-                <div class="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center shadow-sm">
-                    <div><div class="font-bold text-gray-800">${item.mode}</div><div class="text-xs text-gray-400 mt-1">${item.date}</div><div class="text-sm mt-1">Đúng <b class="text-blue-600">${item.correct}/${item.total}</b> câu</div></div>
-                    <div class="${item.score >= 5 ? 'bg-green-500' : 'bg-red-500'} text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-md">${item.score}</div>
-                </div>`).join('');
-            }
+            localStorage.removeItem(key); // Xóa khỏi bộ nhớ trình duyệt
+            showHistoryView(); // Vẽ lại giao diện (sẽ hiện thông báo trống)
         }
-    </script>
+    }
+
+    // 2. Hàm xem chi tiết lịch sử
+    function viewHistoryDetail(index) {
+        const key = `history_sub_${currentSubject.id}`;
+        const history = JSON.parse(localStorage.getItem(key)) || [];
+        const item = history[index];
+
+        if(!item.questions || !item.userAnswers) {
+            alert("Bài này được làm từ phiên bản cũ, không có dữ liệu chi tiết để xem lại.");
+            return;
+        }
+
+        // Nạp dữ liệu cũ vào biến toàn cục
+        questionList = item.questions;
+        userAnswers = item.userAnswers;
+        currentIndex = 0;
+        isHistoryReview = true; // Bật cờ xem lịch sử
+        
+        // Cập nhật giao diện
+        document.getElementById('header-title').innerText = `Xem lại: ${item.date}`;
+        document.getElementById('quiz-timer').innerText = "KẾT THÚC";
+        
+        // Ẩn nút Nộp bài, Hiện nút Thoát
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('btn-exit-review').classList.remove('hidden');
+
+        showView('view-quiz');
+        renderQuestion();
+    }
+
+    function exitHistoryReview() {
+        isHistoryReview = false;
+        showHistoryView();
+    }
+</script>
 </body>
 
 </html>
