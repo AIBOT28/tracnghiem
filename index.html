@@ -344,29 +344,76 @@
     }
 
     // --- API & DATA ---
+    // --- 1. HÀM XỬ LÝ DỮ LIỆU & CACHE ---
     async function renderSubjects() {
         const container = document.getElementById('subject-list');
+        
+        // 1. Kiểm tra Cache trước
+        const cachedSubjects = localStorage.getItem('danh_sach_mon_hoc');
+        if (cachedSubjects) {
+            try {
+                danhSachMon = JSON.parse(cachedSubjects);
+                renderSubjectListUI(); 
+                return; 
+            } catch (e) {
+                console.log("Cache lỗi, sẽ tải lại từ server");
+                localStorage.removeItem('danh_sach_mon_hoc');
+            }
+        }
+
         container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i><p class="mt-2">Đang tải môn học...</p></div>';
+
         try {
             const response = await fetch(`${API_BASE_URL}/subjects`);
             if (!response.ok) throw new Error("Lỗi kết nối");
+            
             danhSachMon = await response.json();
-            container.innerHTML = danhSachMon.map(mon => `
-                <div onclick="selectSubject(${mon.id}, '${mon.ten}')" 
-                     class="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-50 p-3 rounded-lg text-blue-600"><i class="fa-solid fa-book text-2xl"></i></div>
-                        <div class="flex-1 min-w-0">
-                             <h3 class="font-bold text-gray-800 text-base truncate">${mon.ten}</h3>
-                             <p class="text-xs font-bold text-gray-500 mt-1">Tổng có ${mon.soCau} câu</p>
-                             <p class="text-xs text-gray-500 mt-1">Nhấp để ôn tập</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        } catch (error) { container.innerHTML = `<div class="col-span-full text-center text-red-500">Lỗi tải dữ liệu.</div>`; }
+
+            
+            localStorage.setItem('danh_sach_mon_hoc', JSON.stringify(danhSachMon));
+            
+            renderSubjectListUI();
+        } catch (error) { 
+            console.error(error);
+            container.innerHTML = `<div class="col-span-full text-center text-red-500">Không thể tải danh sách môn học.</div>`; 
+        }
     }
 
+    
+    function renderSubjectListUI() {
+        const container = document.getElementById('subject-list');
+        
+        if (danhSachMon.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center text-gray-500">Chưa có môn học nào.</div>';
+            return;
+        }
+
+        container.innerHTML = danhSachMon.map(mon => `
+            <div onclick="selectSubject(${mon.id}, '${mon.ten}')" 
+                 class="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden group">
+                
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-50 p-3 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <i class="fa-solid fa-book text-2xl"></i>
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                         <h3 class="font-bold text-gray-800 text-base truncate">${mon.ten}</h3>
+                         
+                         <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                                <i class="fa-solid fa-layer-group"></i> ${mon.soCau || 0} câu
+                            </span>
+                         </div>
+
+                         <p class="text-xs text-gray-400 mt-2">Nhấp để ôn tập</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+                }
+
+       
     async function selectSubject(id, name) {
         currentSubject = { id: id, name: name };
         document.getElementById('selected-subject-name').innerText = name;
