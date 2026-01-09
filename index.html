@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tài liệu ôn thi by NLDL</title>
+    <title>Tài liệu ôn thi by NLDK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -354,7 +354,7 @@
         try {
             const res = await fetch(`${API_BASE_URL}/chapters/${subjectId}`);
             const chapters = await res.json();
-            select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">Chương ${c.name}</option>`).join('');
         } catch (e) { select.innerHTML = '<option>Lỗi tải chương</option>'; }
     }
 
