@@ -266,8 +266,10 @@
                 Phát triển bởi
                 <a href="#" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">NLDK</a>
             </p>
-            <p class="text-xs text-gray-400 mt-1">© 2025 Trắc nghiệm Online. Vibe Coding chỉ với 1 giờ </p>
-            <p class="text-xs text-gray-400 mt-1">Website chỉ mục đích hỗ trợ sinh viên ôn thi</p>
+            <p class="text-xs text-gray-400 mt-1">© 2025 Trắc nghiệm Online. Vibe Coding chỉ với 1 giờ. >Website chỉ mục đích hỗ trợ sinh viên ôn thi </p>
+            <div class="mt-2 text-xs text-gray-400 flex justify-center items-center gap-1">
+                <i class="fa-solid fa-eye"></i> Lượt truy cập: <span id="visitor-count" class="font-bold text-gray-500">...</span>
+            </div>
         </div>
     </div>
 
@@ -283,7 +285,26 @@
         renderSubjects();
         checkAndRestoreSession();
     };
+// --- HÀM ĐẾM LƯỢT TRUY CẬP (Dùng bên thứ 3: CountAPI) ---
+    async function updateVisitorCount() {
+        try {
+            // Cấu hình định danh (Namespace phải duy nhất để không trùng web khác)
+            const namespace = 'tracnghiem_nldk_project'; 
+            const key = 'visits';
 
+            // Gọi API hit (Tự động cộng 1 và trả về số mới)
+            const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                // data.value chứa số lượt truy cập
+                document.getElementById('visitor-count').innerText = data.value.toLocaleString();
+            }
+        } catch (error) {
+            console.error("Lỗi đếm lượt truy cập:", error);
+            document.getElementById('visitor-count').innerText = "(ẩn)";
+        }
+    }
     // ... (Giữ nguyên các hàm togglePaletteMobile, showView, toggleReviewOptions) ...
     function togglePaletteMobile() {
         document.getElementById('sidebar-palette').classList.toggle('hidden');
