@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trắc nghiệm Online Pro - Mobile Optimized</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Segoe UI', 'sans-serif'] },
+                    colors: { primary: '#3b82f6', success: '#22c55e', danger: '#ef4444' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 h-screen w-screen overflow-hidden font-sans m-0 p-0">
+
+    <div id="app-container" class="w-full h-full bg-white flex flex-col relative">
+
+        <div id="restore-notification"
+            class="hidden absolute top-5 left-1/2 transform -translate-x-1/2 z-[60] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-bounce">
+            <i class="fa-solid fa-circle-check text-green-400"></i>
+            <span class="text-sm font-medium">Đã khôi phục bài làm cũ</span>
+        </div>
+
+        <div class="bg-blue-600 text-white px-4 flex justify-between items-center shadow-md z-20 shrink-0 h-14">
+            <button id="btn-back-header" onclick="goBack()"
+                class="invisible hover:bg-white/20 text-white px-3 py-1.5 rounded transition text-sm font-medium flex items-center gap-1">
+                <i class="fa-solid fa-chevron-left"></i> <span class="hidden sm:inline">Quay lại</span>
+            </button>
+            <span id="header-title" class="font-bold text-lg tracking-wide truncate max-w-[200px]">Trắc nghiệm
+                Online</span>
+            <div class="w-20 flex justify-end">
+                <button onclick="showHistoryView()" class="text-white hover:bg-white/20 p-2 rounded-full transition"
+                    title="Lịch sử">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="view-subjects" class="view-section flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-6 mt-4">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">Chọn môn học</h2>
+                    <p class="text-gray-500 text-sm">Chọn môn để bắt đầu ôn luyện</p>
+                </div>
+                <div id="subject-list"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
+                </div>
+            </div>
+        </div>
+
+        <div id="view-modes" class="hidden view-section flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
+            <div class="max-w-lg mx-auto mt-4">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Môn: <span id="selected-subject-name"
+                            class="text-blue-600">...</span></h2>
+                </div>
+                <div class="space-y-4">
+                    <div onclick="setupExam('thithu')"
+                        class="group bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all flex items-center justify-between relative overflow-hidden">
+                        <div class="absolute left-0 top-0 w-1 h-full bg-red-500 group-hover:h-full transition-all">
+                        </div>
+                        <div class="pl-4">
+                            <h3 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition">🚀 Thi Thử
+                            </h3>
+                            <p class="text-gray-500 text-sm mt-1">40 câu / 60 phút.</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all">
+                        <div onclick="toggleReviewOptions()"
+                            class="p-5 cursor-pointer hover:bg-gray-50 flex items-center justify-between relative">
+                            <div class="absolute left-0 top-0 w-1 h-full bg-green-500"></div>
+                            <div class="pl-4">
+                                <h3 class="font-bold text-gray-800 text-lg text-green-700">📖 Ôn Tập</h3>
+                                <p class="text-gray-500 text-sm mt-1">Hiện đáp án ngay.</p>
+                            </div>
+                            <i id="icon-chevron"
+                                class="fa-solid fa-chevron-down text-gray-400 transition-transform"></i>
+                        </div>
+                        <div id="review-sub-options" class="hidden bg-gray-50 border-t border-gray-100 p-5 space-y-3">
+                            <button onclick="setupExam('on_ngaunhien')"
+                                class="w-full bg-white border hover:border-blue-400 py-3 rounded-lg shadow-sm font-medium">60
+                                Câu ngẫu nhiên</button>
+                            <select id="chapter-select" class="block w-full p-3 border rounded-lg">
+                                <option>Đang tải chương...</option>
+                            </select>
+                            <button onclick="setupExam('on_chuong')"
+                                class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow">Bắt đầu ôn
+                                chương</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-quiz"
+            class="hidden view-section flex-grow flex flex-col md:flex-row bg-white h-full overflow-hidden relative">
+
+            <div class="flex-grow flex flex-col h-full relative md:border-r border-gray-200">
+                <div
+                    class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex justify-between items-center shadow-sm shrink-0 z-10 h-12">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase">Thời gian</span>
+                        <span id="quiz-timer" class="text-lg font-mono font-bold text-red-600">00:00</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-gray-400 uppercase">Câu</span>
+                        <span class="font-bold text-blue-600 text-lg" id="progress-text-top">0/0</span>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-y-auto p-4 md:p-8 bg-white pb-20" id="quiz-scroll-area">
+                    <div class="max-w-3xl mx-auto">
+                        <div id="question-text"
+                            class="text-lg md:text-2xl font-medium text-gray-800 leading-relaxed mb-6">
+                            Đang tải...
+                        </div>
+                        <div id="answer-container" class="space-y-3 md:space-y-4"></div>
+                        <div id="explanation-area"
+                            class="hidden mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+                            <strong><i class="fa-regular fa-lightbulb"></i> Giải thích:</strong> <span
+                                id="explanation-text"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="border-t border-gray-200 p-2 md:p-4 bg-white flex justify-between items-center shrink-0 h-16 md:h-20">
+                    <button onclick="prevQuestion()"
+                        class="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium mr-2 flex justify-center items-center gap-1">
+                        <i class="fa-solid fa-arrow-left"></i> <span class="hidden md:inline">Trước</span>
+                    </button>
+
+                    <button onclick="togglePaletteMobile()"
+                        class="flex-1 md:hidden px-2 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-bold mr-2 flex justify-center items-center gap-1">
+                        <i class="fa-solid fa-table-cells"></i> DS Câu
+                    </button>
+
+                    <button id="btn-submit" onclick="nopBai()"
+                        class="hidden md:block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md">
+                        Nộp bài
+                    </button>
+
+                    <button onclick="nextQuestion()"
+                        class="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1">
+                        <span class="hidden md:inline">Sau</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="sidebar-palette" class="
+                hidden md:flex flex-col bg-gray-50 border-l border-gray-200 shrink-0 
+                md:w-80 md:static
+                fixed inset-0 z-50 bg-white md:bg-gray-50
+            ">
+                <div
+                    class="md:hidden p-4 border-b border-gray-200 flex justify-between items-center bg-blue-600 text-white shadow-md">
+                    <span class="font-bold text-lg">Danh sách câu hỏi</span>
+                    <button onclick="togglePaletteMobile()" class="text-white hover:bg-white/20 p-2 rounded-full">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <div
+                    class="hidden md:flex p-3 bg-white border-b border-gray-200 font-bold text-gray-700 justify-between items-center shadow-sm h-12">
+                    <span><i class="fa-solid fa-table-cells"></i> Danh sách câu</span>
+                    <span id="palette-progress"
+                        class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">0/0</span>
+                </div>
+
+                <div class="flex-grow overflow-y-auto p-3">
+                    <div id="question-palette" class="grid grid-cols-5 md:grid-cols-5 gap-3 md:gap-2">
+                    </div>
+                </div>
+
+                <div class="md:hidden p-4 border-t border-gray-200 bg-white">
+                    <button onclick="nopBai()"
+                        class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg">
+                        Nộp bài thi
+                    </button>
+                </div>
+
+                <div class="hidden md:block p-3 border-t border-gray-200 bg-white text-xs text-gray-500 space-y-2">
+                    <div class="flex items-center gap-2"><span
+                            class="w-4 h-4 rounded border border-gray-300 bg-white block"></span> Chưa làm</div>
+                    <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-blue-500 block"></span> Đã làm
+                    </div>
+                    <div class="flex items-center gap-2"><span
+                            class="w-4 h-4 rounded border-2 border-blue-600 block"></span> Đang xem</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-history" class="hidden view-section flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
+            <div class="max-w-4xl mx-auto mt-4">
+                <h3 class="text-xl font-bold text-center text-gray-800 mb-6 pb-2 border-b">
+                    Lịch sử: <span id="history-subject-name" class="text-blue-600"></span>
+                </h3>
+                <div id="history-list" class="space-y-3 pb-20"></div>
+                <div id="history-empty" class="hidden text-center py-10">
+                    <p class="text-gray-500">Chưa có bài làm nào.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto py-8 text-center border-t border-gray-200">
+            <p class="text-sm text-gray-500">
+                Phát triển bởi
+                <a href="#" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">NLDK</a>
+            </p>
+            <p class="text-xs text-gray-400 mt-1">© 2025 Trắc nghiệm Online. Vibe Coding chỉ với 1 giờ </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://tracnghiemapi.runasp.net/api/Exam';
+        const SESSION_KEY = 'exam_ongoing_session';
+
+        let danhSachMon = [], currentSubject = null, currentMode = null, questionList = [];
+        let currentIndex = 0, userAnswers = {}, timerInterval, timeLeft = 0, isReviewMode = false;
+
+        window.onload = function () {
+            renderSubjects();
+            checkAndRestoreSession();
+        };
+
+        function togglePaletteMobile() {
+            const sidebar = document.getElementById('sidebar-palette');
+            // Trên mobile: class 'hidden' sẽ ẩn/hiện overlay
+            // Trên desktop: class 'md:flex' luôn giữ nó hiện (override hidden), nên toggle hidden không ảnh hưởng desktop layout
+            sidebar.classList.toggle('hidden');
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+
+            // Reset sidebar state khi chuyển view
+            if (viewId !== 'view-quiz') {
+                document.getElementById('sidebar-palette').classList.add('hidden');
+            }
+
+            const btnBack = document.getElementById('btn-back-header');
+            const title = document.getElementById('header-title');
+
+            if (viewId === 'view-subjects') {
+                btnBack.classList.add('invisible');
+                title.innerText = "Trắc nghiệm Online";
+            } else {
+                btnBack.classList.remove('invisible');
+                if (currentSubject) title.innerText = currentSubject.name;
+            }
+        }
+
+        function toggleReviewOptions() {
+            const opts = document.getElementById('review-sub-options');
+            const icon = document.getElementById('icon-chevron');
+            if (opts.classList.contains('hidden')) {
+                opts.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                opts.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // --- API & DATA ---
+        async function renderSubjects() {
+            const container = document.getElementById('subject-list');
+            container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i><p class="mt-2">Đang tải môn học...</p></div>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/subjects`);
+                if (!response.ok) throw new Error("Lỗi kết nối");
+                danhSachMon = await response.json();
+                container.innerHTML = danhSachMon.map(mon => `
+                <div onclick="selectSubject(${mon.id}, '${mon.ten}')" 
+                     class="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-blue-50 p-3 rounded-lg text-blue-600"><i class="fa-solid fa-book text-2xl"></i></div>
+                        <div class="flex-1 min-w-0">
+                             <h3 class="font-bold text-gray-800 text-base truncate">${mon.ten}</h3>
+                             <p class="text-xs text-gray-500 mt-1">Nhấp để ôn tập</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            } catch (error) { container.innerHTML = `<div class="col-span-full text-center text-red-500">Lỗi tải dữ liệu.</div>`; }
+        }
+
+        async function selectSubject(id, name) {
+            currentSubject = { id: id, name: name };
+            document.getElementById('selected-subject-name').innerText = name;
+            document.getElementById('history-subject-name').innerText = name;
+            document.getElementById('review-sub-options').classList.add('hidden');
+            document.getElementById('icon-chevron').classList.remove('rotate-180');
+            await loadChapters(id);
+            showView('view-modes');
+        }
+
+        async function loadChapters(subjectId) {
+            const select = document.getElementById('chapter-select');
+            select.innerHTML = '<option>Đang tải...</option>';
+            try {
+                const res = await fetch(`${API_BASE_URL}/chapters/${subjectId}`);
+                const chapters = await res.json();
+                select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            } catch (e) { select.innerHTML = '<option>Lỗi tải chương</option>'; }
+        }
+
+        async function setupExam(mode) {
+            currentMode = mode;
+            isReviewMode = mode.startsWith('on_');
+            document.getElementById('question-text').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải đề thi...';
+            document.getElementById('answer-container').innerHTML = "";
+            showView('view-quiz');
+
+            let url = `${API_BASE_URL}/generate?subjectId=${currentSubject.id}&mode=${mode}`;
+            if (mode === 'on_chuong') url += `&chapterId=${document.getElementById('chapter-select').value}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(await res.text());
+                questionList = await res.json();
+                if (questionList.length === 0) { alert("Không tìm thấy câu hỏi!"); goBack(); return; }
+
+                currentIndex = 0; userAnswers = {};
+                let thoiGianPhut = (mode === 'thithu') ? 60 : 0;
+
+                // Text nút nộp bài
+                const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
+                document.getElementById('btn-submit').innerHTML = btnText;
+
+                renderQuestion();
+                if (thoiGianPhut > 0) { timeLeft = thoiGianPhut * 60; startTimer(); }
+                else { document.getElementById('quiz-timer').innerText = "∞"; }
+                saveCurrentSession();
+            } catch (error) { alert("Lỗi: " + error.message); goBack(); }
+        }
+
+        function renderQuestion() {
+            const q = questionList[currentIndex];
+            const userChoice = userAnswers[currentIndex];
+
+            document.getElementById('quiz-scroll-area').scrollTop = 0;
+
+            const doneCount = Object.keys(userAnswers).length;
+            const total = questionList.length;
+            document.getElementById('progress-text-top').innerText = `${doneCount}/${total}`;
+            document.getElementById('palette-progress').innerText = `${doneCount}/${total}`;
+
+            document.getElementById('question-text').innerText = `Câu ${currentIndex + 1}: ${q.text}`;
+            document.getElementById('explanation-area').classList.add('hidden');
+
+            const container = document.getElementById('answer-container');
+            container.innerHTML = q.answers.map(ans => {
+                let baseClass = "block w-full text-left p-3 md:p-4 rounded-lg border-2 cursor-pointer transition-all flex items-start gap-3 select-none text-base";
+                let statusClass = "border-gray-200 hover:border-blue-300 bg-white text-gray-700";
+                let radioChecked = "";
+                let icon = "";
+
+                if (userChoice) {
+                    if (userChoice === ans.key) {
+                        radioChecked = "checked";
+                        statusClass = "border-blue-500 bg-blue-50 ring-1 ring-blue-500 text-blue-800 font-medium";
+                    }
+                    if (isReviewMode) {
+                        if (ans.key === q.correct) {
+                            statusClass = "border-green-500 bg-green-50 text-green-800 font-medium";
+                            icon = '<i class="fa-solid fa-check text-green-600 mt-1"></i>';
+                        } else if (userChoice === ans.key && userChoice !== q.correct) {
+                            statusClass = "border-red-400 bg-red-50 text-red-800";
+                            icon = '<i class="fa-solid fa-xmark text-red-600 mt-1"></i>';
+                        }
+                    }
+                }
+                const disabledAttr = (isReviewMode && userChoice) ? 'disabled' : '';
+                return `
+                <label class="${baseClass} ${statusClass}" onclick="chooseAnswer('${ans.key}')">
+                    <div class="mt-1"><input type="radio" name="answer_${currentIndex}" value="${ans.key}" class="accent-blue-600 w-4 h-4" ${radioChecked} ${disabledAttr}></div>
+                    <div class="flex-grow text-sm md:text-base"><span class="font-bold mr-1">${ans.key}.</span> ${ans.text}</div>
+                    <div>${icon}</div>
+                </label>
+            `;
+            }).join('');
+
+            if (isReviewMode && userChoice && q.explanation) {
+                document.getElementById('explanation-text').innerText = q.explanation;
+                document.getElementById('explanation-area').classList.remove('hidden');
+            }
+            renderQuestionPalette();
+        }
+
+        function renderQuestionPalette() {
+            const paletteContainer = document.getElementById('question-palette');
+            paletteContainer.innerHTML = questionList.map((_, idx) => {
+                let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
+                if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
+                else if (userAnswers[idx]) classes += "bg-blue-500 border-blue-600 text-white";
+                else classes += "bg-white border-gray-300 text-gray-600";
+
+                // Thêm hàm đóng palette mobile khi chọn câu
+                return `<button onclick="jumpToQuestion(${idx})" class="${classes}">${idx + 1}</button>`;
+            }).join('');
+        }
+
+        function jumpToQuestion(index) {
+            currentIndex = index;
+            renderQuestion();
+            saveCurrentSession();
+            // Nếu đang ở mobile thì đóng palette sau khi chọn
+            if (window.innerWidth < 768) togglePaletteMobile();
+        }
+
+        function chooseAnswer(key) {
+            if (isReviewMode && userAnswers[currentIndex]) return;
+            userAnswers[currentIndex] = key;
+            renderQuestion();
+            saveCurrentSession();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questionList.length - 1) {
+                currentIndex++;
+                renderQuestion();
+                saveCurrentSession();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+                saveCurrentSession();
+            }
+        }
+
+        function goBack() {
+            if (!document.getElementById('view-quiz').classList.contains('hidden')) {
+                if (!confirm("Thoát bài sẽ mất kết quả chưa lưu. Tiếp tục?")) return;
+                clearInterval(timerInterval);
+                clearSession();
+            }
+            if (!document.getElementById('view-modes').classList.contains('hidden')) {
+                currentSubject = null;
+                showView('view-subjects');
+            } else {
+                showView('view-modes');
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                saveCurrentSession();
+                if (timeLeft <= 0) { clearInterval(timerInterval); alert("Hết giờ làm bài!"); nopBai(true); }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('quiz-timer').innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+        }
+
+        function saveCurrentSession() {
+            if (document.getElementById('view-quiz').classList.contains('hidden')) return;
+            const sessionData = {
+                subject: currentSubject, mode: currentMode, questions: questionList,
+                index: currentIndex, answers: userAnswers, time: timeLeft, isReview: isReviewMode,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        }
+
+        function checkAndRestoreSession() {
+            const dataStr = localStorage.getItem(SESSION_KEY);
+            if (!dataStr) return;
+            const data = JSON.parse(dataStr);
+            if ((new Date().getTime() - data.timestamp) / (1000 * 60 * 60) > 24) { clearSession(); return; }
+            if (confirm(`Khôi phục bài thi môn: ${data.subject.name}?`)) {
+                currentSubject = data.subject; currentMode = data.mode; questionList = data.questions;
+                currentIndex = data.index; userAnswers = data.answers; timeLeft = data.time; isReviewMode = data.isReview;
+
+                document.getElementById('selected-subject-name').innerText = currentSubject.name;
+                document.getElementById('header-title').innerText = currentSubject.name;
+                const btnText = isReviewMode ? '<i class="fa-solid fa-check-double"></i> Kết thúc' : '<i class="fa-solid fa-paper-plane"></i> Nộp bài';
+                document.getElementById('btn-submit').innerHTML = btnText;
+
+                showView('view-quiz');
+                renderQuestion();
+                if (timeLeft > 0 && !isReviewMode) startTimer(); else if (isReviewMode) document.getElementById('quiz-timer').innerText = "∞";
+                document.getElementById('restore-notification').classList.remove('hidden');
+                setTimeout(() => { document.getElementById('restore-notification').classList.add('hidden'); }, 3000);
+            } else { clearSession(); }
+        }
+
+        function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+        function nopBai(force = false) {
+            if (!force && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+            clearInterval(timerInterval);
+            let soCauDung = 0;
+            questionList.forEach((q, index) => { if (userAnswers[index] === q.correct) soCauDung++; });
+            let diem = (soCauDung / questionList.length) * 10;
+            saveHistory(currentSubject.id, soCauDung, questionList.length, diem);
+            alert(`KẾT QUẢ:\n- Số câu đúng: ${soCauDung}/${questionList.length}\n- Điểm số: ${diem.toFixed(2)}`);
+            clearSession();
+            showHistoryView();
+        }
+
+        function saveHistory(subjectId, correct, total, score) {
+            const key = `history_sub_${subjectId}`;
+            let history = JSON.parse(localStorage.getItem(key)) || [];
+            history.unshift({ date: new Date().toLocaleString('vi-VN'), mode: isReviewMode ? "Ôn tập" : "Thi thử", correct, total, score: score.toFixed(1) });
+            localStorage.setItem(key, JSON.stringify(history));
+        }
+
+        function showHistoryView() {
+            const key = `history_sub_${currentSubject.id}`;
+            const history = JSON.parse(localStorage.getItem(key)) || [];
+            showView('view-history');
+            const list = document.getElementById('history-list');
+            const empty = document.getElementById('history-empty');
+            if (history.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); }
+            else {
+                empty.classList.add('hidden');
+                list.innerHTML = history.map(item => `
+                <div class="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center shadow-sm">
+                    <div><div class="font-bold text-gray-800">${item.mode}</div><div class="text-xs text-gray-400 mt-1">${item.date}</div><div class="text-sm mt-1">Đúng <b class="text-blue-600">${item.correct}/${item.total}</b> câu</div></div>
+                    <div class="${item.score >= 5 ? 'bg-green-500' : 'bg-red-500'} text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-md">${item.score}</div>
+                </div>`).join('');
+            }
+        }
+    </script>
+</body>
+
+</html>
