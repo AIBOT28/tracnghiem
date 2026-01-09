@@ -347,20 +347,22 @@
     // --- 1. HÀM XỬ LÝ DỮ LIỆU & CACHE ---
     async function renderSubjects() {
         const container = document.getElementById('subject-list');
+        const CACHE_KEY = 'danh_sach_mon_hoc';
+        const CACHE_TIME = 1000 * 60 * 60; 
+
         
-        // 1. Kiểm tra Cache trước
-        const cachedSubjects = localStorage.getItem('danh_sach_mon_hoc');
-        if (cachedSubjects) {
-            try {
-                danhSachMon = JSON.parse(cachedSubjects);
-                renderSubjectListUI(); 
+        const cachedData = localStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+            const parsed = JSON.parse(cachedData);
+            const now = new Date().getTime()
+            if (now - parsed.timestamp < CACHE_TIME) {
+                danhSachMon = parsed.data;
+                renderSubjectListUI();
                 return; 
-            } catch (e) {
-                console.log("Cache lỗi, sẽ tải lại từ server");
-                localStorage.removeItem('danh_sach_mon_hoc');
             }
         }
 
+        
         container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-500"></i><p class="mt-2">Đang tải môn học...</p></div>';
 
         try {
@@ -370,7 +372,11 @@
             danhSachMon = await response.json();
 
             
-            localStorage.setItem('danh_sach_mon_hoc', JSON.stringify(danhSachMon));
+            const dataToSave = {
+                data: danhSachMon,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(dataToSave));
             
             renderSubjectListUI();
         } catch (error) { 
@@ -378,6 +384,7 @@
             container.innerHTML = `<div class="col-span-full text-center text-red-500">Không thể tải danh sách môn học.</div>`; 
         }
     }
+    
 
     
     function renderSubjectListUI() {
