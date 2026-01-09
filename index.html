@@ -286,24 +286,24 @@
         checkAndRestoreSession();
         updateVisitorCount();
     };
-// --- HÀM ĐẾM LƯỢT TRUY CẬP (Dùng bên thứ 3: CountAPI) ---
+
     async function updateVisitorCount() {
         try {
-            // Cấu hình định danh (Namespace phải duy nhất để không trùng web khác)
+            // Định danh web của bạn (giữ nguyên để không trùng web khác)
             const namespace = 'tracnghiem_nldk_project'; 
             const key = 'visits';
 
-            // Gọi API hit (Tự động cộng 1 và trả về số mới)
-            const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+            // Gọi API đếm (endpoint /up sẽ tự động tăng lên 1)
+            const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
             
             if (response.ok) {
                 const data = await response.json();
-                // data.value chứa số lượt truy cập
-                document.getElementById('visitor-count').innerText = data.value.toLocaleString();
+                // API này trả về { "count": 123 }
+                document.getElementById('visitor-count').innerText = data.count.toLocaleString();
             }
         } catch (error) {
             console.error("Lỗi đếm lượt truy cập:", error);
-            document.getElementById('visitor-count').innerText = "(ẩn)";
+            document.getElementById('visitor-count').innerText = "err";
         }
     }
     // ... (Giữ nguyên các hàm togglePaletteMobile, showView, toggleReviewOptions) ...
