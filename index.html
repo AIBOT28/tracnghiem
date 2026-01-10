@@ -437,7 +437,7 @@
         try {
             const res = await fetch(`${API_BASE_URL}/chapters/${subjectId}`);
             const chapters = await res.json();
-            select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.id}">Chương ${c.name}</option>`).join('');
+            select.innerHTML = chapters.length === 0 ? '<option value="">Chưa có chương</option>' : chapters.map(c => `<option value="${c.name}">Chương ${c.name}</option>`).join('');
         } catch (e) { select.innerHTML = '<option>Lỗi tải chương</option>'; }
     }
 
