@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/api-proxy/:match*",
+      "source": "/nldk/:match*",
       "destination": "http://tracnghiemapi.runasp.net/api/:match*"
     }
   ]
