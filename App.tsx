@@ -127,7 +127,7 @@ const App: React.FC = () => {
     }
 
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: API_HEADERS });
       if (!res.ok) throw new Error("Lỗi tải đề thi");
       const data: Question[] = await res.json();
       
