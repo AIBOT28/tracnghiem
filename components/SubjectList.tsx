@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Subject } from '../types';
-import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME } from '../constants';
+import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME,API_HEADERS  } from '../constants';
 
 interface SubjectListProps {
   onSelectSubject: (subject: Subject) => void;
