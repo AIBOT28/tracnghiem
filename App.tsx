@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Subject, ExamMode, Question, SessionData, HistoryItem } from './types';
-import { SESSION_KEY, API_BASE_URL } from './constants';
+import { SESSION_KEY, API_BASE_URL, API_HEADERS } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
