@@ -18,7 +18,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
     const fetchChapters = async () => {
       setLoadingChapters(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/chapters/${subject.id}`);
+        const res = await fetch(`${API_BASE_URL}/chapters/${subject.id}`, { headers: API_HEADERS });
         const data = await res.json();
         setChapters(data);
         if (data.length > 0) setSelectedChapter(data[0].name);
