@@ -7,5 +7,5 @@ export const CACHE_TIME = 1000 * 60 * 20; // 20 minutes
 // Cấu hình Header cho các yêu cầu API
 export const API_HEADERS = {
   'Content-Type': 'application/json',
-  'x-api-key': 'NLDK@146' // Bạn có thể thay đổi key này theo yêu cầu của Backend
+  'version': '10' // Bạn có thể thay đổi key này theo yêu cầu của Backend
 };
