@@ -170,46 +170,48 @@ const QuizView: React.FC<QuizViewProps> = ({
           </div>
         </div>
 
-        <div className="border-t border-gray-200 p-2 md:p-4 bg-white flex justify-between items-center shrink-0 h-16 md:h-20">
+        {/* Bottom Action Bar */}
+        <div className="border-t border-gray-200 p-2 md:p-4 bg-white flex justify-between items-center shrink-0 h-16 md:h-20 gap-2">
           <button 
             onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
-            className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium mr-2 flex justify-center items-center gap-1 transition"
+            className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1 transition text-sm md:text-base"
           >
-            <i className="fa-solid fa-arrow-left"></i> <span className="hidden md:inline">Trước</span>
+            <i className="fa-solid fa-arrow-left"></i> <span className="hidden sm:inline">Trước</span>
           </button>
 
           <button 
             onClick={() => setShowPalette(true)}
-            className="flex-1 md:hidden px-2 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg font-bold mr-2 flex justify-center items-center gap-1"
+            className="flex-1 md:hidden px-2 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg font-bold flex justify-center items-center gap-1 text-xs"
           >
-            <i className="fa-solid fa-table-cells"></i> DS Câu
+            <i className="fa-solid fa-table-cells"></i> <span className="whitespace-nowrap">DS Câu</span>
           </button>
 
           {!isHistoryReview ? (
             <button 
               onClick={() => handleFinish()}
-              className="hidden md:block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition"
+              className="flex-1 md:flex-none px-2 md:px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition text-sm md:text-base whitespace-nowrap"
             >
-              {isReviewMode ? 'Kết thúc' : 'Nộp bài'}
+              {isReviewMode ? (window.innerWidth < 640 ? 'Xong' : 'Kết thúc') : 'Nộp bài'}
             </button>
           ) : (
             <button 
               onClick={onExitHistory}
-              className="hidden md:block px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-bold shadow-md transition"
+              className="flex-1 md:flex-none px-2 md:px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-bold shadow-md transition text-sm md:text-base whitespace-nowrap"
             >
-              Thoát xem lại
+              Thoát
             </button>
           )}
 
           <button 
             onClick={() => setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1))}
-            className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1 transition"
+            className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1 transition text-sm md:text-base"
           >
-            <span className="hidden md:inline">Sau</span> <i className="fa-solid fa-arrow-right"></i>
+            <span className="hidden sm:inline">Sau</span> <i className="fa-solid fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
+      {/* Question Palette */}
       <div className={`
         ${showPalette ? 'flex' : 'hidden'} 
         fixed inset-0 z-[50] bg-white text-gray-800 
