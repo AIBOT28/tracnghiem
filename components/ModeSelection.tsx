@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Subject, ExamMode, Chapter } from '../types';
-import { API_BASE_URL } from '../constants';
+import { API_BASE_URL,API_HEADERS  } from '../constants';
 
 interface ModeSelectionProps {
   subject: Subject;
