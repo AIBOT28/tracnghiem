@@ -21,6 +21,7 @@ const App: React.FC = () => {
   const [isHistoryReview, setIsHistoryReview] = useState(false);
   const [visitorCount, setVisitorCount] = useState<string>('...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Visitor counter
   useEffect(() => {
@@ -113,12 +114,12 @@ const App: React.FC = () => {
   const startExam = async (mode: ExamMode, chapterId?: string) => {
     if (!currentSubject) return;
     
+    setIsLoading(true);
     setCurrentMode(mode);
     setIsReviewMode(mode.startsWith('on_'));
     setIsHistoryReview(false);
     setCurrentIndex(0);
     setUserAnswers({});
-    setCurrentView('quiz');
 
     let url = `${API_BASE_URL}/generate?subjectId=${currentSubject.id}&mode=${mode}`;
     if (mode === ExamMode.ON_CHUONG && chapterId) {
@@ -129,16 +130,20 @@ const App: React.FC = () => {
       const res = await fetch(url);
       if (!res.ok) throw new Error("Lỗi tải đề thi");
       const data: Question[] = await res.json();
+      
       if (data.length === 0) {
         alert("Không tìm thấy câu hỏi!");
-        setCurrentView('modes');
+        setIsLoading(false);
         return;
       }
+      
       setQuestionList(data);
       setTimeLeft(mode === ExamMode.THI_THU ? 60 * 60 : 0);
+      setCurrentView('quiz');
     } catch (error) {
       alert("Lỗi: " + (error as Error).message);
-      setCurrentView('modes');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -152,8 +157,22 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white relative">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm fade-in">
+          <div className="relative flex items-center justify-center">
+             <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+             <div className="absolute inset-0 flex items-center justify-center">
+                <i className="fa-solid fa-bolt text-blue-600 animate-pulse"></i>
+             </div>
+          </div>
+          <p className="mt-4 text-gray-700 font-bold text-lg animate-pulse">Đang tải đề thi...</p>
+          <p className="text-gray-500 text-sm">Vui lòng đợi trong giây lát</p>
+        </div>
+      )}
+
       {showRestoreToast && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[100] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-bounce">
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[90] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-bounce">
           <i className="fa-solid fa-circle-check text-green-400"></i>
           <span className="text-sm font-medium">Đã khôi phục bài làm cũ</span>
         </div>
