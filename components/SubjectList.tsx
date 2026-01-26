@@ -25,7 +25,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/subjects`);
+        const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
         if (!response.ok) throw new Error("Lỗi kết nối");
         const data = await response.json();
         setSubjects(data);
