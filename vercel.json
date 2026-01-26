@@ -3,6 +3,10 @@
     {
       "source": "/nldk/Exam/:path*",
       "destination": "http://tracnghiemapi.runasp.net/Exam/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
