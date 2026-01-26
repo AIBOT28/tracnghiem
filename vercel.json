@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/nldk/Exam/(.*)",
-      "destination": "http://tracnghiemapi.runasp.net/Exam/$1"
+      "source": "/nldk/Exam/:path*",
+      "destination": "http://tracnghiemapi.runasp.net/Exam/:path*"
     }
   ]
 }
