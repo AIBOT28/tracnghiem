@@ -183,7 +183,7 @@ const App: React.FC = () => {
         onBack={handleBack}
         showBack={currentView !== 'subjects'}
         onShowHistory={() => currentSubject && setCurrentView('history')}
-        disableHistory={!currentSubject}
+        disableHistory={!currentSubject || currentView === 'quiz' || currentView === 'history'}
       />
 
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
