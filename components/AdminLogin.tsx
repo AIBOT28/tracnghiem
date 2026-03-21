@@ -22,7 +22,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          version': '10'
+          'version': '10'
         },
         body: JSON.stringify({ username, password }),
       });
