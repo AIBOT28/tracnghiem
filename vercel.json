@@ -5,7 +5,7 @@
       "destination": "http://tracnghiemapi.runasp.net/api/Exam/:path*"
     },
     {
-      "source": "/api/:path*",
+      "source": "/api/Auth/:path*",
       "destination": "http://tracnghiemapi.runasp.net/api/Auth/:path*"
     }
   ]
