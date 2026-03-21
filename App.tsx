@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Subject, ExamMode, Question, SessionData, HistoryItem } from './types';
-import { SESSION_KEY, API_BASE_URL, API_HEADERS } from './constants';
+import { SESSION_KEY, API_BASE_URL, API_HEADERS, AUTH_API_URL } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
 import ModeSelection from './components/ModeSelection';
 import QuizView from './components/QuizView';
 import HistoryView from './components/HistoryView';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard.tsx';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('subjects');
@@ -22,6 +24,7 @@ const App: React.FC = () => {
   const [visitorCount, setVisitorCount] = useState<string>('...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
   // Visitor counter
   useEffect(() => {
@@ -40,6 +43,19 @@ const App: React.FC = () => {
       }
     };
     updateVisitorCount();
+  }, []);
+
+  // Check for admin route and login status
+  useEffect(() => {
+    if (window.location.pathname === '/admin') {
+      const token = localStorage.getItem('admin_auth_token');
+      if (token) {
+        setIsAdminLoggedIn(true);
+        setCurrentView('admin-dashboard');
+      } else {
+        setCurrentView('admin-login');
+      }
+    }
   }, []);
 
   // Session restoration
@@ -155,6 +171,19 @@ const App: React.FC = () => {
     setCurrentView('quiz');
   };
 
+  const handleAdminLoginSuccess = () => {
+    setIsAdminLoggedIn(true);
+    setCurrentView('admin-dashboard');
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('admin_auth_token');
+    localStorage.removeItem('admin_auth');
+    setIsAdminLoggedIn(false);
+    setCurrentView('subjects');
+    window.history.replaceState(null, '', '/');
+  };
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white relative">
       {/* Loading Overlay */}
@@ -181,7 +210,7 @@ const App: React.FC = () => {
       <Header 
         title={currentView === 'subjects' ? 'Trắc nghiệm Online' : (currentSubject?.ten || 'Trắc nghiệm')}
         onBack={handleBack}
-        showBack={currentView !== 'subjects'}
+        showBack={currentView !== 'subjects' && currentView !== 'admin-login' && currentView !== 'admin-dashboard'}
         onShowHistory={() => currentSubject && setCurrentView('history')}
         disableHistory={!currentSubject || currentView === 'quiz' || currentView === 'history'}
       />
@@ -224,9 +253,17 @@ const App: React.FC = () => {
             onViewDetail={handleViewHistoryDetail} 
           />
         )}
+
+        {currentView === 'admin-login' && (
+          <AdminLogin onLoginSuccess={handleAdminLoginSuccess} onBack={() => setCurrentView('subjects')} />
+        )}
+
+        {currentView === 'admin-dashboard' && isAdminLoggedIn && (
+          <AdminDashboard onLogout={handleAdminLogout} />
+        )}
       </main>
 
-      <Footer visitorCount={visitorCount} />
+      {(currentView !== 'admin-login' && currentView !== 'admin-dashboard') && <Footer visitorCount={visitorCount} />}
     </div>
   );
 };
