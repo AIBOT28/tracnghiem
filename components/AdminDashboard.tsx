@@ -10,23 +10,73 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'settings'>('overview');
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [addLoading, setAddLoading] = useState(false);
+  const [addStatus, setAddStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const normalizeSubjects = (data: any[]): Subject[] => {
+    return data.map((item) => ({
+      id: item.id || item.maMh || item.MaMh || 0,
+      ten: item.ten || item.tenMh || item.TenMh || 'Không có tên',
+      soCau: item.soCau || item.soCauHoi || item.SoCau || 0
+    }));
+  };
+
+  const fetchSubjects = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
+      if (response.ok) {
+        const data = await response.json();
+        setSubjects(normalizeSubjects(Array.isArray(data) ? data : data || []));
+      } else {
+        console.error('Không tải được danh sách môn học');
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
-        if (response.ok) {
-          const data = await response.json();
-          setSubjects(data);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSubjects();
   }, []);
+
+  const handleAddSubject = async () => {
+    if (!newSubjectName.trim()) {
+      setAddStatus({ type: 'error', message: 'Tên môn học không được để trống.' });
+      return;
+    }
+
+    setAddLoading(true);
+    setAddStatus(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/subjects`, {
+        method: 'POST',
+        headers: API_HEADERS,
+        body: JSON.stringify({ tenMh: newSubjectName.trim() })
+      });
+
+      const respData = await response.json();
+      if (!response.ok) {
+        const errorMsg = respData?.message || respData?.Message || 'Lỗi khi thêm môn học.';
+        setAddStatus({ type: 'error', message: errorMsg });
+        return;
+      }
+
+      setAddStatus({ type: 'success', message: 'Thêm môn học thành công!' });
+      setNewSubjectName('');
+      localStorage.removeItem(CACHE_KEY_SUBJECTS);
+      await fetchSubjects();
+    } catch (error) {
+      setAddStatus({ type: 'error', message: 'Không thể kết nối máy chủ. Vui lòng thử lại.' });
+      console.error(error);
+    } finally {
+      setAddLoading(false);
+    }
+  };
 
   const handleClearCache = () => {
     localStorage.removeItem(CACHE_KEY_SUBJECTS);
@@ -145,13 +195,36 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
           {activeTab === 'subjects' && (
             <div className="space-y-6 fade-in">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">Danh sách môn học</h2>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 text-sm shadow-sm">
-                  <i className="fa-solid fa-plus"></i> Thêm môn mới
-                </button>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">Danh sách môn học</h2>
+                  <p className="text-sm text-gray-500">Thêm, sửa hoặc xóa môn học cho hệ thống.</p>
+                </div>
               </div>
-              
+
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                  <input
+                    value={newSubjectName}
+                    onChange={(e) => setNewSubjectName(e.target.value)}
+                    placeholder="Tên môn học mới"
+                    className="md:col-span-3 border border-gray-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                  <button
+                    onClick={handleAddSubject}
+                    disabled={addLoading}
+                    className="md:col-span-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium transition"
+                  >
+                    {addLoading ? 'Đang thêm...' : 'Thêm môn mới'}
+                  </button>
+                </div>
+                {addStatus && (
+                  <div className={`mt-3 text-sm ${addStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {addStatus.message}
+                  </div>
+                )}
+              </div>
+
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 {loading ? (
                   <div className="p-10 text-center text-gray-500">
