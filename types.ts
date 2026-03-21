@@ -48,4 +48,4 @@ export interface SessionData {
   timestamp: number;
 }
 
-export type View = 'subjects' | 'modes' | 'quiz' | 'history';
+export type View = 'subjects' | 'modes' | 'quiz' | 'history' | 'admin_login' | 'admin_dashboard';
