@@ -6,7 +6,7 @@
     },
     {
       "source": "/api/:path*",
-      "destination": "http://tracnghiemapi.runasp.net/api/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/Auth:path*"
     }
   ]
 }
