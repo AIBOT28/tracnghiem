@@ -7,8 +7,8 @@
       "destination": "http://tracnghiemapi.runasp.net/api/Exam/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/Auth/:path*",
+      "destination": "http://tracnghiemapi.runasp.net/api/Auth/:path*"
     }
   ]
 }
