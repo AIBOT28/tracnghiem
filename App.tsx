@@ -8,8 +8,7 @@ import SubjectList from './components/SubjectList';
 import ModeSelection from './components/ModeSelection';
 import QuizView from './components/QuizView';
 import HistoryView from './components/HistoryView';
-import AdminLogin from './components/AdminLogin';
-import AdminDashboard from './components/AdminDashboard.tsx';
+
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('subjects');
