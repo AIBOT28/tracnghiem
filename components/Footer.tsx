@@ -18,7 +18,9 @@ const Footer: React.FC<FooterProps> = ({ visitorCount }) => {
       <div className="mt-1 text-xs text-gray-400 flex justify-center items-center gap-1">
         <i className="fa-solid fa-eye"></i> Lượt truy cập: <span className="font-bold text-gray-500">{visitorCount}</span>
       </div>
-      <script id="_wau0u3">var _wau = _wau || []; _wau.push(["small", "u67wa694cy", "0u3"]);</script><script async src="//waust.at/s.js"></script>
+      <script id="_wauabc123">var _wau = _wau || []; _wau.push(["small", "u67wa694cy", "abc12345"]);</script>
+
+<script async src="//waust.at/s.js"></script>
     </div>
   );
 };
