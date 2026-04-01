@@ -44,18 +44,6 @@ const App: React.FC = () => {
     updateVisitorCount();
   }, []);
 
-  // Check for admin route and login status
-  useEffect(() => {
-    if (window.location.pathname === '/admin') {
-      const token = localStorage.getItem('admin_auth_token');
-      if (token) {
-        setIsAdminLoggedIn(true);
-        setCurrentView('admin-dashboard');
-      } else {
-        setCurrentView('admin-login');
-      }
-    }
-  }, []);
 
   // Session restoration
   useEffect(() => {
@@ -128,7 +116,7 @@ const App: React.FC = () => {
 
   const startExam = async (mode: ExamMode, chapterId?: string) => {
     if (!currentSubject) return;
-    
+
     setIsLoading(true);
     setCurrentMode(mode);
     setIsReviewMode(mode.startsWith('on_'));
@@ -145,13 +133,13 @@ const App: React.FC = () => {
       const res = await fetch(url, { headers: API_HEADERS });
       if (!res.ok) throw new Error("Lỗi tải đề thi");
       const data: Question[] = await res.json();
-      
+
       if (data.length === 0) {
         alert("Không tìm thấy câu hỏi!");
         setIsLoading(false);
         return;
       }
-      
+
       setQuestionList(data);
       setTimeLeft(mode === ExamMode.THI_THU ? 60 * 60 : 0);
       setCurrentView('quiz');
@@ -189,10 +177,10 @@ const App: React.FC = () => {
       {isLoading && (
         <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm fade-in">
           <div className="relative flex items-center justify-center">
-             <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-             <div className="absolute inset-0 flex items-center justify-center">
-                <i className="fa-solid fa-bolt text-blue-600 animate-pulse"></i>
-             </div>
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <i className="fa-solid fa-bolt text-blue-600 animate-pulse"></i>
+            </div>
           </div>
           <p className="mt-4 text-gray-700 font-bold text-lg animate-pulse">Đang tải đề thi...</p>
           <p className="text-gray-500 text-sm">Vui lòng đợi trong giây lát</p>
@@ -206,7 +194,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <Header 
+      <Header
         title={currentView === 'subjects' ? 'Trắc nghiệm Online' : (currentSubject?.ten || 'Trắc nghiệm')}
         onBack={handleBack}
         showBack={currentView !== 'subjects' && currentView !== 'admin-login' && currentView !== 'admin-dashboard'}
@@ -218,13 +206,13 @@ const App: React.FC = () => {
         {currentView === 'subjects' && (
           <SubjectList onSelectSubject={handleSelectSubject} />
         )}
-        
+
         {currentView === 'modes' && currentSubject && (
           <ModeSelection subject={currentSubject} onStart={startExam} />
         )}
 
         {currentView === 'quiz' && (
-          <QuizView 
+          <QuizView
             questions={questionList}
             currentIndex={currentIndex}
             userAnswers={userAnswers}
@@ -236,30 +224,24 @@ const App: React.FC = () => {
             setUserAnswers={setUserAnswers}
             subjectId={currentSubject?.id || 0}
             onFinish={() => {
-                localStorage.removeItem(SESSION_KEY);
-                setCurrentView('history');
+              localStorage.removeItem(SESSION_KEY);
+              setIsHistoryReview(true);
             }}
             onExitHistory={() => {
-                setIsHistoryReview(false);
-                setCurrentView('history');
+              setIsHistoryReview(false);
+              setCurrentView('history');
             }}
           />
         )}
 
         {currentView === 'history' && currentSubject && (
-          <HistoryView 
-            subject={currentSubject} 
-            onViewDetail={handleViewHistoryDetail} 
+          <HistoryView
+            subject={currentSubject}
+            onViewDetail={handleViewHistoryDetail}
           />
         )}
 
-        {currentView === 'admin-login' && (
-          <AdminLogin onLoginSuccess={handleAdminLoginSuccess} onBack={() => setCurrentView('subjects')} />
-        )}
 
-        {currentView === 'admin-dashboard' && isAdminLoggedIn && (
-          <AdminDashboard onLogout={handleAdminLogout} />
-        )}
       </main>
 
       {(currentView !== 'admin-login' && currentView !== 'admin-dashboard') && <Footer visitorCount={visitorCount} />}

@@ -123,18 +123,23 @@ const QuizView: React.FC<QuizViewProps> = ({
                 let statusClass = "border-gray-200 hover:border-blue-300 bg-white text-gray-700";
                 let icon = null;
 
-                if (currentChoice) {
-                  if (currentChoice === ans.key) {
-                    statusClass = "border-blue-500 bg-blue-50 ring-1 ring-blue-500 text-blue-800 font-medium";
-                  }
-                  if (isViewer) {
-                    if (ans.key === q.correct) {
-                      statusClass = "border-green-500 bg-green-50 text-green-800 font-medium";
-                      icon = <i className="fa-solid fa-circle-check text-green-600 text-xl mt-1"></i>;
-                    } else if (currentChoice === ans.key && currentChoice !== q.correct) {
-                      statusClass = "border-red-400 bg-red-50 text-red-800";
-                      icon = <i className="fa-solid fa-circle-xmark text-red-600 text-xl mt-1"></i>;
-                    }
+                const isSelected = currentChoice === ans.key;
+                const isCorrect = ans.key === q.correct;
+                // Show results if we are viewing history (after submission) 
+                // OR if we are in practice mode and the user has already made a choice
+                const showResults = isHistoryReview || (isReviewMode && !!currentChoice);
+
+                if (isSelected) {
+                  statusClass = "border-blue-500 bg-blue-50 ring-1 ring-blue-500 text-blue-800 font-medium";
+                }
+
+                if (showResults) {
+                  if (isCorrect) {
+                    statusClass = "border-green-500 bg-green-50 text-green-800 font-medium";
+                    icon = <i className="fa-solid fa-circle-check text-green-600 text-xl mt-1"></i>;
+                  } else if (isSelected && !isCorrect) {
+                    statusClass = "border-red-400 bg-red-50 text-red-800";
+                    icon = <i className="fa-solid fa-circle-xmark text-red-600 text-xl mt-1"></i>;
                   }
                 }
 
