@@ -114,9 +114,29 @@ const QuizView: React.FC<QuizViewProps> = ({
 
         <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 md:p-8 bg-white pb-20">
           <div className="max-w-3xl mx-auto">
-            <div className="text-lg md:text-2xl font-medium text-gray-800 leading-relaxed mb-6">
-              Câu {currentIndex + 1}: {q.text}
+            <div className="text-lg md:text-2xl font-medium text-gray-800 leading-relaxed mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-gray-500">Câu {currentIndex + 1}:</span>
+                {isHistoryReview && (
+                  userAnswers[currentIndex] === q.correct ? (
+                    <span className="text-xs md:text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full border border-green-200 flex items-center gap-1 font-bold">
+                      <i className="fa-solid fa-circle-check"></i> ĐÚNG
+                    </span>
+                  ) : (
+                    <span className="text-xs md:text-sm bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-200 flex items-center gap-1 font-bold">
+                      <i className="fa-solid fa-circle-xmark"></i> SAI
+                    </span>
+                  )
+                )}
+              </div>
+              <div className="text-gray-800">{q.text}</div>
             </div>
+
+            {isHistoryReview && !currentChoice && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-2 text-sm font-bold animate-pulse">
+                <i className="fa-solid fa-circle-exclamation"></i> Bạn chưa chọn đáp án cho câu này!
+              </div>
+            )}
 
             <div className="space-y-3 md:space-y-4">
               {q.answers.map(ans => {
@@ -239,12 +259,14 @@ const QuizView: React.FC<QuizViewProps> = ({
             {questions.map((_, idx) => {
               let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
               if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
-              else if (userAnswers[idx]) {
+              else if (userAnswers[idx] || isHistoryReview) {
                 if (isHistoryReview) {
                   const isCorrect = userAnswers[idx] === questions[idx].correct;
-                  classes += isCorrect ? "bg-green-500 border-green-600 text-white" : "bg-red-500 border-red-600 text-white";
-                } else {
+                  classes += (isCorrect && userAnswers[idx]) ? "bg-green-500 border-green-600 text-white" : "bg-red-500 border-red-600 text-white";
+                } else if (userAnswers[idx]) {
                   classes += "bg-blue-500 border-blue-600 text-white";
+                } else {
+                  classes += "bg-white border-gray-300 text-gray-600";
                 }
               } else {
                 classes += "bg-white border-gray-300 text-gray-600";
