@@ -259,14 +259,12 @@ const QuizView: React.FC<QuizViewProps> = ({
             {questions.map((_, idx) => {
               let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
               if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
-              else if (userAnswers[idx] || isHistoryReview) {
+              else if (userAnswers[idx]) {
                 if (isHistoryReview) {
                   const isCorrect = userAnswers[idx] === questions[idx].correct;
-                  classes += (isCorrect && userAnswers[idx]) ? "bg-green-500 border-green-600 text-white" : "bg-red-500 border-red-600 text-white";
-                } else if (userAnswers[idx]) {
-                  classes += "bg-blue-500 border-blue-600 text-white";
+                  classes += isCorrect ? "bg-green-500 border-green-600 text-white" : "bg-red-500 border-red-600 text-white";
                 } else {
-                  classes += "bg-white border-gray-300 text-gray-600";
+                  classes += "bg-blue-500 border-blue-600 text-white";
                 }
               } else {
                 classes += "bg-white border-gray-300 text-gray-600";
