@@ -8,6 +8,8 @@ import SubjectList from './components/SubjectList';
 import ModeSelection from './components/ModeSelection';
 import QuizView from './components/QuizView';
 import HistoryView from './components/HistoryView';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
 
 
 const App: React.FC = () => {
@@ -24,6 +26,16 @@ const App: React.FC = () => {
   const [showRestoreToast, setShowRestoreToast] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('admin_auth_token'));
+
+  // Sync admin state with token
+  useEffect(() => {
+    if (adminToken) {
+      setIsAdminLoggedIn(true);
+    } else {
+      setIsAdminLoggedIn(false);
+    }
+  }, [adminToken]);
 
   // Visitor counter
   useEffect(() => {
@@ -158,17 +170,15 @@ const App: React.FC = () => {
     setCurrentView('quiz');
   };
 
-  const handleAdminLoginSuccess = () => {
-    setIsAdminLoggedIn(true);
+  const handleAdminLoginSuccess = (token: string) => {
+    setAdminToken(token);
     setCurrentView('admin-dashboard');
   };
 
   const handleAdminLogout = () => {
     localStorage.removeItem('admin_auth_token');
-    localStorage.removeItem('admin_auth');
-    setIsAdminLoggedIn(false);
+    setAdminToken(null);
     setCurrentView('subjects');
-    window.history.replaceState(null, '', '/');
   };
 
   return (
@@ -241,10 +251,29 @@ const App: React.FC = () => {
           />
         )}
 
+        {currentView === 'admin-login' && (
+          <AdminLogin 
+            onLoginSuccess={handleAdminLoginSuccess} 
+            onBack={() => setCurrentView('subjects')} 
+          />
+        )}
+
+        {currentView === 'admin-dashboard' && adminToken && (
+          <AdminDashboard 
+            token={adminToken} 
+            onLogout={handleAdminLogout} 
+          />
+        )}
+
 
       </main>
 
-      {(currentView !== 'admin-login' && currentView !== 'admin-dashboard') && <Footer visitorCount={visitorCount} />}
+      {(currentView !== 'admin-login' && currentView !== 'admin-dashboard') && (
+        <Footer 
+          visitorCount={visitorCount} 
+          onAdminClick={() => setCurrentView('admin-login')} 
+        />
+      )}
     </div>
   );
 };
