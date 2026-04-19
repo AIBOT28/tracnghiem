@@ -277,7 +277,7 @@ const QuizView: React.FC<QuizViewProps> = ({
         fixed inset-0 z-[50] bg-white text-gray-800 
         md:flex md:static md:z-auto md:bg-gray-50 md:border-l md:border-gray-200 md:w-80 md:flex-col
       `}>
-        <div className="md:hidden absolute top-0 left-0 right-0 h-24 bg-blue-600 text-white flex flex-col z-20 shadow-md">
+        <div className={`md:hidden absolute top-0 left-0 right-0 ${isHistoryReview ? 'h-24' : 'h-14'} bg-blue-600 text-white flex flex-col z-20 shadow-md`}>
           <div className="h-12 flex justify-between items-center px-4">
             <span className="font-bold text-lg">Danh sách câu hỏi</span>
             <button onClick={() => setShowPalette(false)} className="text-white hover:bg-white/20 p-2 rounded-full">
@@ -337,7 +337,7 @@ const QuizView: React.FC<QuizViewProps> = ({
           )}
         </div>
 
-        <div className="absolute top-14 bottom-20 left-0 right-0 overflow-y-auto bg-gray-50 p-3 md:static md:flex-1 md:bg-transparent">
+        <div className={`absolute ${isHistoryReview ? 'top-24' : 'top-14'} bottom-20 left-0 right-0 overflow-y-auto bg-gray-50 p-3 md:static md:flex-1 md:bg-transparent`}>
           <div className="grid grid-cols-5 gap-3 md:gap-2">
             {questions.map((_, idx) => {
               // Apply filter
