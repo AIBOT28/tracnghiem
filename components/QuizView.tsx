@@ -23,6 +23,7 @@ const QuizView: React.FC<QuizViewProps> = ({
   subjectId, onFinish, onExitHistory
 }) => {
   const [showPalette, setShowPalette] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Timer logic
@@ -87,6 +88,40 @@ const QuizView: React.FC<QuizViewProps> = ({
     
     alert(`KẾT QUẢ:\n- Số câu đúng: ${correctCount}/${questions.length}\n- Điểm số: ${score}`);
     onFinish();
+  };
+
+  const getFilteredIndices = () => {
+    return questions.map((_, idx) => idx).filter(idx => {
+      if (filter === 'all') return true;
+      const isCorrect = userAnswers[idx] === questions[idx].correct;
+      return filter === 'correct' ? isCorrect : !isCorrect;
+    });
+  };
+
+  const handleNext = () => {
+    if (filter === 'all') {
+      setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1));
+    } else {
+      const indices = getFilteredIndices();
+      const nextIndex = indices.find(idx => idx > currentIndex);
+      if (nextIndex !== undefined) {
+        setCurrentIndex(nextIndex);
+      } else {
+        // Wrap around or do nothing? Let's just do nothing for now as it's the last one in filter
+      }
+    }
+  };
+
+  const handlePrev = () => {
+    if (filter === 'all') {
+      setCurrentIndex(prev => Math.max(0, prev - 1));
+    } else {
+      const indices = getFilteredIndices();
+      const prevIndex = [...indices].reverse().find(idx => idx < currentIndex);
+      if (prevIndex !== undefined) {
+        setCurrentIndex(prevIndex);
+      }
+    }
   };
 
   const q = questions[currentIndex];
@@ -198,7 +233,7 @@ const QuizView: React.FC<QuizViewProps> = ({
         {/* Bottom Action Bar */}
         <div className="border-t border-gray-200 p-2 md:p-4 bg-white flex justify-between items-center shrink-0 h-16 md:h-20 gap-2">
           <button 
-            onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+            onClick={handlePrev}
             className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1 transition text-sm md:text-base"
           >
             <i className="fa-solid fa-arrow-left"></i> <span className="hidden sm:inline">Trước</span>
@@ -228,7 +263,7 @@ const QuizView: React.FC<QuizViewProps> = ({
           )}
 
           <button 
-            onClick={() => setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1))}
+            onClick={handleNext}
             className="flex-1 md:flex-none px-2 md:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex justify-center items-center gap-1 transition text-sm md:text-base"
           >
             <span className="hidden sm:inline">Sau</span> <i className="fa-solid fa-arrow-right"></i>
@@ -242,21 +277,76 @@ const QuizView: React.FC<QuizViewProps> = ({
         fixed inset-0 z-[50] bg-white text-gray-800 
         md:flex md:static md:z-auto md:bg-gray-50 md:border-l md:border-gray-200 md:w-80 md:flex-col
       `}>
-        <div className="md:hidden absolute top-0 left-0 right-0 h-14 bg-blue-600 text-white flex justify-between items-center px-4 shadow-md z-20">
-          <span className="font-bold text-lg">Danh sách câu hỏi</span>
-          <button onClick={() => setShowPalette(false)} className="text-white hover:bg-white/20 p-2 rounded-full">
-            <i className="fa-solid fa-xmark text-xl"></i>
-          </button>
+        <div className="md:hidden absolute top-0 left-0 right-0 h-24 bg-blue-600 text-white flex flex-col z-20 shadow-md">
+          <div className="h-12 flex justify-between items-center px-4">
+            <span className="font-bold text-lg">Danh sách câu hỏi</span>
+            <button onClick={() => setShowPalette(false)} className="text-white hover:bg-white/20 p-2 rounded-full">
+              <i className="fa-solid fa-xmark text-xl"></i>
+            </button>
+          </div>
+          {isHistoryReview && (
+            <div className="h-12 flex items-center px-2 gap-1 bg-blue-700">
+              <button 
+                onClick={() => setFilter('all')}
+                className={`flex-1 py-1 text-xs font-bold rounded ${filter === 'all' ? 'bg-white text-blue-700' : 'bg-blue-600/50 text-white'}`}
+              >
+                Tất cả
+              </button>
+              <button 
+                onClick={() => setFilter('correct')}
+                className={`flex-1 py-1 text-xs font-bold rounded ${filter === 'correct' ? 'bg-white text-green-700' : 'bg-blue-600/50 text-white'}`}
+              >
+                Đúng
+              </button>
+              <button 
+                onClick={() => setFilter('incorrect')}
+                className={`flex-1 py-1 text-xs font-bold rounded ${filter === 'incorrect' ? 'bg-white text-red-700' : 'bg-blue-600/50 text-white'}`}
+              >
+                Sai
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="hidden md:flex p-3 bg-white border-b border-gray-200 font-bold text-gray-700 justify-between items-center shadow-sm h-12 shrink-0">
-          <span><i className="fa-solid fa-table-cells"></i> Danh sách câu</span>
-          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{doneCount}/{questions.length}</span>
+        <div className="hidden md:flex flex-col bg-white border-b border-gray-200 shadow-sm shrink-0">
+          <div className="p-3 font-bold text-gray-700 flex justify-between items-center h-12">
+            <span><i className="fa-solid fa-table-cells"></i> Danh sách câu</span>
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{doneCount}/{questions.length}</span>
+          </div>
+          {isHistoryReview && (
+            <div className="flex p-2 gap-1 bg-gray-50 border-t border-gray-100">
+              <button 
+                onClick={() => setFilter('all')}
+                className={`flex-1 py-1 text-[10px] font-bold rounded transition ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
+              >
+                Tất cả
+              </button>
+              <button 
+                onClick={() => setFilter('correct')}
+                className={`flex-1 py-1 text-[10px] font-bold rounded transition ${filter === 'correct' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
+              >
+                Đúng
+              </button>
+              <button 
+                onClick={() => setFilter('incorrect')}
+                className={`flex-1 py-1 text-[10px] font-bold rounded transition ${filter === 'incorrect' ? 'bg-red-600 text-white' : 'bg-white text-gray-600 border border-gray-200'}`}
+              >
+                Sai
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="absolute top-14 bottom-20 left-0 right-0 overflow-y-auto bg-gray-50 p-3 md:static md:flex-1 md:bg-transparent">
           <div className="grid grid-cols-5 gap-3 md:gap-2">
             {questions.map((_, idx) => {
+              // Apply filter
+              if (isHistoryReview && filter !== 'all') {
+                const isCorrect = userAnswers[idx] === questions[idx].correct;
+                if (filter === 'correct' && !isCorrect) return null;
+                if (filter === 'incorrect' && isCorrect) return null;
+              }
+
               let classes = "h-10 w-full rounded-md font-bold text-sm transition flex items-center justify-center border ";
               if (idx === currentIndex) classes += "border-blue-600 ring-2 ring-blue-300 text-blue-700 bg-white shadow-md z-10 scale-105";
               else if (userAnswers[idx]) {
