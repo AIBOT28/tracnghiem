@@ -59,6 +59,9 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
           <p className="text-red-500 text-sm">
             Lưu ý: Dữ liệu cập nhật sau 20-30 phút. Nếu chưa thấy hãy thử tab ẩn danh.
           </p>
+          <p className="text-blue-500 text-sm font-bold">
+            Website không giới hạn lượt làm bài, dù lưu lượng có đông mọi thứ sẽ ổn định.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20">
