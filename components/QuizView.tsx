@@ -174,7 +174,8 @@ const QuizView: React.FC<QuizViewProps> = ({
             )}
 
             <div className="space-y-3 md:space-y-4">
-              {q.answers.map(ans => {
+              {q.answers.map((ans, ansIdx) => {
+                const displayLetter = String.fromCharCode(65 + ansIdx);
                 let statusClass = "border-gray-200 hover:border-blue-300 bg-white text-gray-700";
                 let icon = null;
 
@@ -214,7 +215,7 @@ const QuizView: React.FC<QuizViewProps> = ({
                       />
                     </div>
                     <div className="flex-grow text-sm md:text-base">
-                      <span className="font-bold mr-1">{ans.key}.</span> {ans.text}
+                      <span className="font-bold mr-1">{displayLetter}.</span> {ans.text}
                     </div>
                     <div>{icon}</div>
                   </label>

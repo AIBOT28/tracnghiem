@@ -43,12 +43,15 @@ const ChapterQuestionList: React.FC = () => {
              <div key={idx} className="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-200">
                 <h3 className="font-bold text-gray-800 mb-4 text-lg">Câu {idx + 1}: {q.text}</h3>
                 <div className="space-y-3">
-                  {q.answers.map(ans => (
-                    <div key={ans.key} className={`p-4 rounded-lg border-2 ${ans.key === q.correct ? 'bg-green-50 border-green-500 text-green-800 font-medium' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
-                      <span className="font-bold mr-2">{ans.key}.</span> {ans.text}
-                      {ans.key === q.correct && <i className="fa-solid fa-circle-check ml-2 text-green-600 text-lg float-right"></i>}
-                    </div>
-                  ))}
+                  {q.answers.map((ans, ansIdx) => {
+                    const displayLetter = String.fromCharCode(65 + ansIdx);
+                    return (
+                      <div key={ans.key} className={`p-4 rounded-lg border-2 ${ans.key === q.correct ? 'bg-green-50 border-green-500 text-green-800 font-medium' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+                        <span className="font-bold mr-2">{displayLetter}.</span> {ans.text}
+                        {ans.key === q.correct && <i className="fa-solid fa-circle-check ml-2 text-green-600 text-lg float-right"></i>}
+                      </div>
+                    );
+                  })}
                 </div>
                 {q.explanation && (
                   <div className="mt-4 text-sm text-yellow-800 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100">
