@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Subject, ExamMode, Question, SessionData } from '../types';
 import { API_BASE_URL, API_HEADERS, SESSION_KEY, CACHE_KEY_SUBJECTS } from '../constants';
 import QuizView from './QuizView';
+import { decryptData } from '../crypto';
 
 const QuizWrapper: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,7 +76,13 @@ const QuizWrapper: React.FC = () => {
         const res = await fetch(url, { headers: API_HEADERS });
         if (!res.ok) throw new Error("Lỗi tải đề thi");
         const data = await res.json();
-        setQuestionList(data);
+        
+        let questionsToSet = data;
+        if (data.encryptedData) {
+            questionsToSet = decryptData(data.encryptedData);
+        }
+        
+        setQuestionList(questionsToSet);
         setTimeLeft(mode === ExamMode.THI_THU ? 60 * 60 : 0);
       } catch (error) {
         alert("Lỗi: " + (error as Error).message);

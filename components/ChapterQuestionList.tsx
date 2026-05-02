@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Question } from '../types';
 import { API_BASE_URL, API_HEADERS } from '../constants';
+import { decryptData } from '../crypto';
 
 const ChapterQuestionList: React.FC = () => {
   const { id, chapterId } = useParams<{ id: string, chapterId: string }>();
@@ -15,7 +16,12 @@ const ChapterQuestionList: React.FC = () => {
         const res = await fetch(`${API_BASE_URL}/generate?subjectId=${id}&mode=on_chuong&chapterId=${chapterId}`, { headers: API_HEADERS });
         if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
-        setQuestions(data);
+        
+        if (data.encryptedData) {
+            setQuestions(decryptData(data.encryptedData));
+        } else {
+            setQuestions(data);
+        }
       } catch (err) {
         console.error(err);
       } finally {
