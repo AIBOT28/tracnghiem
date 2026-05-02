@@ -9,8 +9,6 @@ import SubjectList from './components/SubjectList';
 import ModeSelection from './components/ModeSelection';
 import QuizWrapper from './components/QuizWrapper';
 import HistoryView from './components/HistoryView';
-import AdminLogin from './components/AdminLogin';
-import AdminDashboard from './components/AdminDashboard';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 
@@ -95,7 +93,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [location.pathname, navigate]);
 
   let title = 'Trắc nghiệm Online';
-  let showBack = location.pathname !== '/' && location.pathname !== '/admin-login' && location.pathname !== '/admin-dashboard';
+  let showBack = location.pathname !== '/';
   
   let idStr = '';
   const matchMonHoc = matchPath('/monhoc/:id', location.pathname);
@@ -154,16 +152,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
         {children}
       </main>
-      {location.pathname !== '/admin-login' && location.pathname !== '/admin-dashboard' && (
-          <Footer visitorCount={visitorCount} totalVisitorCount={totalVisitorCount} onAdminClick={() => navigate('/admin-login')} />
-      )}
+      <Footer visitorCount={visitorCount} totalVisitorCount={totalVisitorCount} />
     </div>
   );
 };
 
 const App: React.FC = () => {
-  const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('admin_auth_token'));
-
   return (
     <BrowserRouter>
       <AppLayout>
@@ -175,28 +169,6 @@ const App: React.FC = () => {
           <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />
           <Route path="/history/:id" element={<HistoryView />} />
           <Route path="/history/:id/detail" element={<HistoryDetailWrapper />} />
-          
-          <Route path="/admin-login" element={
-            <AdminLogin 
-              onLoginSuccess={(token) => setAdminToken(token)} 
-              onBack={() => window.location.href = '/'} 
-            />
-          } />
-          
-          <Route path="/admin-dashboard" element={
-            adminToken ? (
-              <AdminDashboard 
-                token={adminToken} 
-                onLogout={() => {
-                  localStorage.removeItem('admin_auth_token');
-                  setAdminToken(null);
-                  window.location.href = '/';
-                }} 
-              />
-            ) : (
-              <div className="p-8 text-center text-red-500">Bạn chưa đăng nhập. <a href="/admin-login" className="underline">Đăng nhập</a></div>
-            )
-          } />
         </Routes>
       </AppLayout>
     </BrowserRouter>

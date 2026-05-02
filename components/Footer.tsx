@@ -4,22 +4,9 @@ import React from 'react';
 interface FooterProps {
   visitorCount: string;
   totalVisitorCount?: string;
-  onAdminClick?: () => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ visitorCount, totalVisitorCount, onAdminClick }) => {
-  const [clickCount, setClickCount] = React.useState(0);
-
-  const handleCopyRightClick = () => {
-    const newCount = clickCount + 1;
-    if (newCount >= 5) {
-      setClickCount(0);
-      onAdminClick?.();
-    } else {
-      setClickCount(newCount);
-    }
-  };
-
+const Footer: React.FC<FooterProps> = ({ visitorCount, totalVisitorCount }) => {
   return (
     <div className="mt-auto py-2 text-center border-t border-gray-200 bg-white shrink-0">
       <p className="text-sm text-gray-500">
@@ -28,10 +15,7 @@ const Footer: React.FC<FooterProps> = ({ visitorCount, totalVisitorCount, onAdmi
         -
         <a href="https://forms.gle/RVvaQx8zUp3XxT8o6" target="_blank" rel="noopener noreferrer" className="mx-1 font-bold text-blue-600 hover:text-blue-800 transition-colors">Báo lỗi hoặc đáp án sai</a>
       </p>
-      <p 
-        className="text-xs text-gray-400 mt-1 cursor-default select-none"
-        onClick={handleCopyRightClick}
-      >
+      <p className="text-xs text-gray-400 mt-1 cursor-default select-none">
         ©10/1/2026 Trắc nghiệm Online.
       </p>
       <div className="mt-1 text-xs text-gray-400 flex justify-center items-center gap-3">
