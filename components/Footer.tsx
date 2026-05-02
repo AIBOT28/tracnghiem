@@ -3,10 +3,11 @@ import React from 'react';
 
 interface FooterProps {
   visitorCount: string;
+  totalVisitorCount?: string;
   onAdminClick?: () => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ visitorCount, onAdminClick }) => {
+const Footer: React.FC<FooterProps> = ({ visitorCount, totalVisitorCount, onAdminClick }) => {
   const [clickCount, setClickCount] = React.useState(0);
 
   const handleCopyRightClick = () => {
@@ -33,8 +34,11 @@ const Footer: React.FC<FooterProps> = ({ visitorCount, onAdminClick }) => {
       >
         ©10/1/2026 Trắc nghiệm Online.
       </p>
-      <div className="mt-1 text-xs text-gray-400 flex justify-center items-center gap-1">
-        <i className="fa-solid fa-users"></i> Đang online: <span className="font-bold text-gray-500">{visitorCount}</span>
+      <div className="mt-1 text-xs text-gray-400 flex justify-center items-center gap-3">
+        <span><i className="fa-solid fa-users"></i> Đang online: <span className="font-bold text-gray-500">{visitorCount}</span></span>
+        {totalVisitorCount && (
+          <span>| <i className="fa-solid fa-eye ml-1"></i> Tổng lượt truy cập: <span className="font-bold text-gray-500">{totalVisitorCount}</span></span>
+        )}
       </div>
       <script id="_wauabc123">var _wau = _wau || []; _wau.push(["small", "u67wa694cy", "abc12345"]);</script>
       <script async src="//waust.at/s.js"></script>

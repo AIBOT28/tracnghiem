@@ -18,7 +18,26 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [visitorCount, setVisitorCount] = useState<string>('...');
+  const [totalVisitorCount, setTotalVisitorCount] = useState<string>('...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
+
+  useEffect(() => {
+    const updateTotalVisitorCount = async () => {
+      try {
+        const namespace = 'tracnghiem_nldk_project';
+        const key = 'visits';
+        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
+        if (response.ok) {
+          const data = await response.json();
+          setTotalVisitorCount(data.count.toLocaleString());
+        }
+      } catch (error) {
+        console.error("Visitor count error:", error);
+        setTotalVisitorCount('err');
+      }
+    };
+    updateTotalVisitorCount();
+  }, []);
 
   useEffect(() => {
     let connection: signalR.HubConnection;
@@ -136,7 +155,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {children}
       </main>
       {location.pathname !== '/admin-login' && location.pathname !== '/admin-dashboard' && (
-          <Footer visitorCount={visitorCount} onAdminClick={() => navigate('/admin-login')} />
+          <Footer visitorCount={visitorCount} totalVisitorCount={totalVisitorCount} onAdminClick={() => navigate('/admin-login')} />
       )}
     </div>
   );
