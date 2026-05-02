@@ -25,7 +25,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     const setupSignalR = async () => {
       connection = new signalR.HubConnectionBuilder()
-        .withUrl(WS_URL)
+        .withUrl(WS_URL, {
+          transport: signalR.HttpTransportType.LongPolling
+        })
         .withAutomaticReconnect()
         .build();
 
