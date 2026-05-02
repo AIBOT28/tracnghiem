@@ -43,26 +43,29 @@ const ChatRoom: React.FC = () => {
 
   useEffect(() => {
     if (connection) {
+      // 1. Đăng ký các listener TRƯỚC KHI start connection để tránh mất tin nhắn (F5 mất tin là do đây)
+      connection.on('ReceiveMessage', (user: string, message: string, time: string) => {
+        setMessages(prev => [...prev, { username: user, content: message, createdAt: time }]);
+      });
+
+      connection.on('ReceiveHistory', (history: ChatMessage[]) => {
+        setMessages(history);
+      });
+
+      connection.on('Error', (errorMessage: string) => {
+        setError(errorMessage);
+        setTimeout(() => setError(null), 5000);
+      });
+
+      // 2. Start connection
       connection.start()
-        .then(() => {
-          console.log('Connected to ChatHub!');
-          
-          connection.on('ReceiveMessage', (user: string, message: string, time: string) => {
-            setMessages(prev => [...prev, { username: user, content: message, createdAt: time }]);
-          });
-
-          connection.on('ReceiveHistory', (history: ChatMessage[]) => {
-            setMessages(history);
-          });
-
-          connection.on('Error', (errorMessage: string) => {
-            setError(errorMessage);
-            setTimeout(() => setError(null), 5000);
-          });
-        })
+        .then(() => console.log('Connected to ChatHub!'))
         .catch(e => console.log('Connection failed: ', e));
 
       return () => {
+        connection.off('ReceiveMessage');
+        connection.off('ReceiveHistory');
+        connection.off('Error');
         connection.stop();
       };
     }
@@ -125,7 +128,7 @@ const ChatRoom: React.FC = () => {
             </span>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setIsEditingUsername(true)}
           className="text-gray-500 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-100 transition-all"
           title="Đổi tên"
@@ -142,11 +145,10 @@ const ChatRoom: React.FC = () => {
             <div key={index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[80%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 {!isMe && <span className="text-xs text-gray-500 mb-1 ml-2">{msg.username}</span>}
-                <div className={`px-4 py-2 rounded-2xl shadow-sm ${
-                  isMe 
-                    ? 'bg-blue-600 text-white rounded-tr-none' 
+                <div className={`px-4 py-2 rounded-2xl shadow-sm ${isMe
+                    ? 'bg-blue-600 text-white rounded-tr-none'
                     : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-                }`}>
+                  }`}>
                   <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 <span className="text-[10px] text-gray-400 mt-1">
