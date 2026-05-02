@@ -21,6 +21,10 @@
     {
       "source": "/api/CauHois/:path*",
       "destination": "http://tracnghiemapi.runasp.net/api/CauHois/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
