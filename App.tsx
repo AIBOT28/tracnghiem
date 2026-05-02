@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { Subject, SessionData } from './types';
-import { SESSION_KEY, CACHE_KEY_SUBJECTS } from './constants';
+import { SESSION_KEY, CACHE_KEY_SUBJECTS, WS_URL } from './constants';
+import * as signalR from '@microsoft/signalr';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
@@ -20,21 +21,32 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [showRestoreToast, setShowRestoreToast] = useState(false);
 
   useEffect(() => {
-    const updateVisitorCount = async () => {
+    let connection: signalR.HubConnection;
+
+    const setupSignalR = async () => {
+      connection = new signalR.HubConnectionBuilder()
+        .withUrl(WS_URL)
+        .withAutomaticReconnect()
+        .build();
+
+      connection.on("UpdateVisitorCount", (count: number) => {
+        setVisitorCount(count.toString());
+      });
+
       try {
-        const namespace = 'tracnghiem_nldk_project';
-        const key = 'visits';
-        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
-        if (response.ok) {
-          const data = await response.json();
-          setVisitorCount(data.count.toLocaleString());
-        }
-      } catch (error) {
-        console.error("Visitor count error:", error);
-        setVisitorCount('err');
+        await connection.start();
+      } catch (err) {
+        console.error("SignalR Connection Error: ", err);
       }
     };
-    updateVisitorCount();
+
+    setupSignalR();
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
   }, []);
 
   // Session restoration

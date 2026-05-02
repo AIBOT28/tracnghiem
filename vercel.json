@@ -23,6 +23,10 @@
       "destination": "http://tracnghiemapi.runasp.net/api/CauHois/:path*"
     },
     {
+      "source": "/visitorHub/:path*",
+      "destination": "http://tracnghiemapi.runasp.net/visitorHub/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
