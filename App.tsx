@@ -83,7 +83,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
   }
 
-  const isQuizView = location.pathname.includes('/thi-thu') || location.pathname.includes('/on-tap');
+  const searchParams = new URLSearchParams(location.search);
+  const isQuizFinished = searchParams.get('finished') === '1';
+  const isQuizView = (location.pathname.includes('/thi-thu') || location.pathname.includes('/on-tap')) && !isQuizFinished;
   const isHistoryView = location.pathname.includes('/history');
 
   const handleBack = () => {

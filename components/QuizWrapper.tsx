@@ -133,6 +133,9 @@ const QuizWrapper: React.FC = () => {
       onFinish={() => {
         localStorage.removeItem(SESSION_KEY);
         setIsHistoryReview(true);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('finished', '1');
+        navigate(`${window.location.pathname}?${newSearchParams.toString()}`, { replace: true });
       }}
       onExitHistory={() => {
         setIsHistoryReview(false);
