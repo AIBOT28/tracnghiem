@@ -49,3 +49,27 @@ export interface SessionData {
 }
 
 export type View = 'subjects' | 'modes' | 'quiz' | 'history' | 'admin-login' | 'admin-dashboard';
+
+export interface AdminMonHoc {
+  maMh: number;
+  tenMh: string;
+}
+
+export interface AdminChuong {
+  maChuong: number;
+  tenChuong: string;
+}
+
+export interface AdminCauHoi {
+  maCauHoi: number;
+  noiDung: string;
+  dapAnA: string;
+  dapAnB: string;
+  dapAnC: string;
+  dapAnD: string;
+  dapAnDung: string;
+  maMonHoc?: number;
+  maChuong?: number;
+  tenMonHoc?: string;
+  tenChuong?: string;
+}

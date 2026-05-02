@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Subject } from '../types';
-import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME,API_HEADERS  } from '../constants';
+import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME, API_HEADERS } from '../constants';
 
 interface SubjectListProps {
-  onSelectSubject: (subject: Subject) => void;
+  onSelectSubject?: (subject: Subject) => void;
 }
 
 const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
@@ -66,10 +66,11 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20">
           {subjects.map(subject => (
-            <div 
+            <Link 
+              to={`/monhoc/${subject.id}`}
               key={subject.id}
-              onClick={() => onSelectSubject(subject)}
-              className="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden group"
+              onClick={() => onSelectSubject && onSelectSubject(subject)}
+              className="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden group block"
             >
               <div className="flex items-center gap-4">
                 <div className="bg-blue-50 p-3 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
@@ -85,7 +86,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
                   <p className="text-xs text-gray-400 mt-2">Nhấp để ôn tập</p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
           {subjects.length === 0 && (
             <div className="col-span-full text-center text-gray-500 py-10">

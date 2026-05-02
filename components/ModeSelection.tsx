@@ -1,24 +1,55 @@
-
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Subject, ExamMode, Chapter } from '../types';
-import { API_BASE_URL,API_HEADERS  } from '../constants';
+import { API_BASE_URL, API_HEADERS, CACHE_KEY_SUBJECTS } from '../constants';
 
 interface ModeSelectionProps {
-  subject: Subject;
-  onStart: (mode: ExamMode, chapterId?: string) => void;
+  subject?: Subject;
+  onStart?: (mode: ExamMode, chapterId?: string) => void;
 }
 
-const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
+const ModeSelection: React.FC<ModeSelectionProps> = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [subject, setSubject] = useState<Subject | null>(null);
+  
   const [showReviewOptions, setShowReviewOptions] = useState(false);
+  const [showSyllabusPopup, setShowSyllabusPopup] = useState(false);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedChapter, setSelectedChapter] = useState('');
   const [loadingChapters, setLoadingChapters] = useState(false);
 
   useEffect(() => {
+    // Get subject details
+    const fetchSubject = async () => {
+      const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        const subj = parsed.data.find((s: Subject) => s.id.toString() === id);
+        if (subj) {
+          setSubject(subj);
+          return;
+        }
+      }
+      try {
+        const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
+        if (response.ok) {
+          const data = await response.json();
+          const subj = data.find((s: Subject) => s.id.toString() === id);
+          if (subj) setSubject(subj);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchSubject();
+  }, [id]);
+
+  useEffect(() => {
     const fetchChapters = async () => {
       setLoadingChapters(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/chapters/${subject.id}`, { headers: API_HEADERS });
+        const res = await fetch(`${API_BASE_URL}/chapters/${id}`, { headers: API_HEADERS });
         const data = await res.json();
         setChapters(data);
         if (data.length > 0) setSelectedChapter(data[0].name);
@@ -28,8 +59,12 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
         setLoadingChapters(false);
       }
     };
-    fetchChapters();
-  }, [subject.id]);
+    if (id) {
+      fetchChapters();
+    }
+  }, [id]);
+
+  if (!subject) return <div className="p-8 text-center text-gray-500"><i className="fa-solid fa-circle-notch fa-spin"></i> Đang tải...</div>;
 
   return (
     <div className="flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
@@ -39,16 +74,16 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
         </div>
 
         <div className="space-y-4">
-          <div 
-            onClick={() => onStart(ExamMode.THI_THU)}
-            className="group bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all flex items-center justify-between relative overflow-hidden"
+          <Link 
+            to={`/thi-thu/${subject.id}`}
+            className="group block bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all relative overflow-hidden"
           >
             <div className="absolute left-0 top-0 w-1 h-full bg-red-500 group-hover:h-full transition-all"></div>
             <div className="pl-4">
               <h3 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition">Thi Thử</h3>
-              <p className="text-gray-500 text-sm mt-1">40 câu / 60 phút.</p>
+              <p className="text-gray-500 text-sm mt-1">40 câu / 60 phút. Không hiện đáp án khi làm.</p>
             </div>
-          </div>
+          </Link>
 
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all">
             <div 
@@ -58,7 +93,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
               <div className="absolute left-0 top-0 w-1 h-full bg-green-500"></div>
               <div className="pl-4">
                 <h3 className="font-bold text-gray-800 text-lg text-green-700">Ôn Tập</h3>
-                <p className="text-gray-500 text-sm mt-1">Hiện đáp án ngay.</p>
+                <p className="text-gray-500 text-sm mt-1">Hiện đáp án ngay khi chọn.</p>
               </div>
               <i className={`fa-solid fa-chevron-down text-gray-400 transition-transform ${showReviewOptions ? 'rotate-180' : ''}`}></i>
             </div>
@@ -67,7 +102,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
               <div className="bg-gray-50 border-t border-gray-100 p-5 space-y-3">
                 <p className="text-gray-500 text-sm mt-1">Ôn tập ngẫu nhiên 60 câu:</p>
                 <button 
-                  onClick={() => onStart(ExamMode.ON_NGAU_NHIEN)}
+                  onClick={() => navigate(`/on-tap/${subject.id}?mode=on_ngaunhien`)}
                   className="w-full bg-white border border-gray-200 hover:border-blue-400 py-3 rounded-lg shadow-sm font-medium transition"
                 >
                   60 Câu ngẫu nhiên
@@ -90,7 +125,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
                       )}
                     </select>
                     <button 
-                      onClick={() => onStart(ExamMode.ON_CHUONG, selectedChapter)}
+                      onClick={() => navigate(`/on-tap/${subject.id}?mode=on_chuong&chapterId=${selectedChapter}`)}
                       disabled={!selectedChapter}
                       className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-gray-400"
                     >
@@ -101,8 +136,60 @@ const ModeSelection: React.FC<ModeSelectionProps> = ({ subject, onStart }) => {
               </div>
             )}
           </div>
+          
+          <button 
+            onClick={() => setShowSyllabusPopup(true)}
+            className="w-full group bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-yellow-500 hover:shadow-lg transition-all flex items-center relative overflow-hidden"
+          >
+            <div className="absolute left-0 top-0 w-1 h-full bg-yellow-500 group-hover:h-full transition-all"></div>
+            <div className="pl-4 flex-1 text-left">
+              <h3 className="font-bold text-gray-800 text-lg group-hover:text-yellow-600 transition">Xem đề cương môn học</h3>
+              <p className="text-gray-500 text-sm mt-1">Xem danh sách các chương và câu hỏi chi tiết.</p>
+            </div>
+            <i className="fa-solid fa-list text-yellow-500 text-2xl opacity-50 group-hover:opacity-100 transition mr-4"></i>
+          </button>
         </div>
       </div>
+
+      {/* Syllabus Modal */}
+      {showSyllabusPopup && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col border border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+              <h3 className="font-bold text-lg text-gray-800">
+                <i className="fa-solid fa-list text-yellow-500 mr-2"></i>
+                Danh sách chương
+              </h3>
+              <button onClick={() => setShowSyllabusPopup(false)} className="text-gray-400 hover:text-gray-600 transition">
+                <i className="fa-solid fa-xmark text-xl"></i>
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4 space-y-2">
+              {loadingChapters ? (
+                <div className="text-center py-8 text-gray-500">
+                  <i className="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                  <p>Đang tải...</p>
+                </div>
+              ) : chapters.length > 0 ? (
+                chapters.map(c => (
+                  <Link 
+                    key={c.name}
+                    to={`/de-cuong/${subject.id}/chuong/${c.name}`}
+                    className="block p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-300 transition font-medium text-gray-700 flex justify-between items-center"
+                  >
+                    <span>Chương {c.name}</span>
+                    <i className="fa-solid fa-chevron-right text-gray-400 text-sm"></i>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  Chưa có dữ liệu chương.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

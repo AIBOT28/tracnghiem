@@ -1,43 +1,23 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Subject, ExamMode, Question, SessionData, HistoryItem } from './types';
-import { SESSION_KEY, API_BASE_URL, API_HEADERS, AUTH_API_URL } from './constants';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, matchPath } from 'react-router-dom';
+import { Subject, SessionData } from './types';
+import { SESSION_KEY, CACHE_KEY_SUBJECTS } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
 import ModeSelection from './components/ModeSelection';
-import QuizView from './components/QuizView';
+import QuizWrapper from './components/QuizWrapper';
 import HistoryView from './components/HistoryView';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import ChapterQuestionList from './components/ChapterQuestionList';
 
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('subjects');
-  const [currentSubject, setCurrentSubject] = useState<Subject | null>(null);
-  const [currentMode, setCurrentMode] = useState<ExamMode | null>(null);
-  const [questionList, setQuestionList] = useState<Question[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isReviewMode, setIsReviewMode] = useState(false);
-  const [isHistoryReview, setIsHistoryReview] = useState(false);
+const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [visitorCount, setVisitorCount] = useState<string>('...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('admin_auth_token'));
 
-  // Sync admin state with token
-  useEffect(() => {
-    if (adminToken) {
-      setIsAdminLoggedIn(true);
-    } else {
-      setIsAdminLoggedIn(false);
-    }
-  }, [adminToken]);
-
-  // Visitor counter
   useEffect(() => {
     const updateVisitorCount = async () => {
       try {
@@ -56,26 +36,21 @@ const App: React.FC = () => {
     updateVisitorCount();
   }, []);
 
-
   // Session restoration
   useEffect(() => {
     const dataStr = localStorage.getItem(SESSION_KEY);
-    if (dataStr) {
+    if (dataStr && location.pathname === '/') {
       const data: SessionData = JSON.parse(dataStr);
       const now = new Date().getTime();
       if ((now - data.timestamp) / (1000 * 60 * 60) < 24) {
         if (window.confirm(`Khôi phục bài thi môn: ${data.subject.ten}?`)) {
-          setCurrentSubject(data.subject);
-          setCurrentMode(data.mode);
-          setQuestionList(data.questions);
-          setCurrentIndex(data.index);
-          setUserAnswers(data.answers);
-          setTimeLeft(data.timeLeft);
-          setIsReviewMode(data.isReviewMode);
-          setIsHistoryReview(false);
-          setCurrentView('quiz');
           setShowRestoreToast(true);
           setTimeout(() => setShowRestoreToast(false), 3000);
+          if (data.mode.startsWith('on_')) {
+            navigate(`/on-tap/${data.subject.id}?mode=${data.mode}&restore=1`);
+          } else {
+            navigate(`/thi-thu/${data.subject.id}?restore=1`);
+          }
         } else {
           localStorage.removeItem(SESSION_KEY);
         }
@@ -83,120 +58,49 @@ const App: React.FC = () => {
         localStorage.removeItem(SESSION_KEY);
       }
     }
-  }, []);
+  }, [location.pathname, navigate]);
 
-  // Persist session
-  useEffect(() => {
-    if (currentView === 'quiz' && !isHistoryReview && currentSubject && currentMode) {
-      const sessionData: SessionData = {
-        subject: currentSubject,
-        mode: currentMode,
-        questions: questionList,
-        index: currentIndex,
-        answers: userAnswers,
-        timeLeft: timeLeft,
-        isReviewMode: isReviewMode,
-        timestamp: new Date().getTime()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-    }
-  }, [currentView, isHistoryReview, currentIndex, userAnswers, timeLeft, currentSubject, currentMode, questionList, isReviewMode]);
+  let title = 'Trắc nghiệm Online';
+  let showBack = location.pathname !== '/' && location.pathname !== '/admin-login' && location.pathname !== '/admin-dashboard';
+  
+  let idStr = '';
+  const matchMonHoc = matchPath('/monhoc/:id', location.pathname);
+  const matchThiThu = matchPath('/thi-thu/:id', location.pathname);
+  const matchOnTap = matchPath('/on-tap/:id', location.pathname);
+  const matchHistory = matchPath('/history/:id', location.pathname);
+  const matchDeCuong = matchPath('/de-cuong/:id/chuong/:chapterId', location.pathname);
 
-  const handleSelectSubject = (subject: Subject) => {
-    setCurrentSubject(subject);
-    setCurrentView('modes');
-  };
+  const match = matchMonHoc || matchThiThu || matchOnTap || matchHistory || matchDeCuong;
+  if (match && match.params.id) {
+      idStr = match.params.id;
+      const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        const subj = parsed.data.find((s: Subject) => s.id.toString() === idStr);
+        if (subj) title = subj.ten;
+      } else {
+        title = 'Trắc nghiệm';
+      }
+  }
+
+  const isQuizView = location.pathname.includes('/thi-thu') || location.pathname.includes('/on-tap');
+  const isHistoryView = location.pathname.includes('/history');
 
   const handleBack = () => {
-    if (currentView === 'quiz') {
-      if (isHistoryReview) {
-        setIsHistoryReview(false);
-        setCurrentView('history');
-        return;
-      }
+    if (isQuizView) {
       if (window.confirm("Thoát bài sẽ mất kết quả chưa lưu. Tiếp tục?")) {
         localStorage.removeItem(SESSION_KEY);
-        setCurrentView('modes');
+        navigate(`/monhoc/${idStr}`);
       }
-    } else if (currentView === 'modes') {
-      setCurrentSubject(null);
-      setCurrentView('subjects');
-    } else if (currentView === 'history') {
-      setCurrentView(currentSubject ? 'modes' : 'subjects');
+    } else if (matchHistory || matchMonHoc) {
+      navigate('/');
+    } else {
+      navigate(-1);
     }
-  };
-
-  const startExam = async (mode: ExamMode, chapterId?: string) => {
-    if (!currentSubject) return;
-
-    setIsLoading(true);
-    setCurrentMode(mode);
-    setIsReviewMode(mode.startsWith('on_'));
-    setIsHistoryReview(false);
-    setCurrentIndex(0);
-    setUserAnswers({});
-
-    let url = `${API_BASE_URL}/generate?subjectId=${currentSubject.id}&mode=${mode}`;
-    if (mode === ExamMode.ON_CHUONG && chapterId) {
-      url += `&chapterId=${chapterId}`;
-    }
-
-    try {
-      const res = await fetch(url, { headers: API_HEADERS });
-      if (!res.ok) throw new Error("Lỗi tải đề thi");
-      const data: Question[] = await res.json();
-
-      if (data.length === 0) {
-        alert("Không tìm thấy câu hỏi!");
-        setIsLoading(false);
-        return;
-      }
-
-      setQuestionList(data);
-      setTimeLeft(mode === ExamMode.THI_THU ? 60 * 60 : 0);
-      setCurrentView('quiz');
-    } catch (error) {
-      alert("Lỗi: " + (error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleViewHistoryDetail = (item: HistoryItem) => {
-    setQuestionList(item.questions);
-    setUserAnswers(item.userAnswers);
-    setCurrentIndex(0);
-    setIsHistoryReview(true);
-    setCurrentView('quiz');
-  };
-
-  const handleAdminLoginSuccess = (token: string) => {
-    setAdminToken(token);
-    setCurrentView('admin-dashboard');
-  };
-
-  const handleAdminLogout = () => {
-    localStorage.removeItem('admin_auth_token');
-    setAdminToken(null);
-    setCurrentView('subjects');
   };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white relative">
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm fade-in">
-          <div className="relative flex items-center justify-center">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <i className="fa-solid fa-bolt text-blue-600 animate-pulse"></i>
-            </div>
-          </div>
-          <p className="mt-4 text-gray-700 font-bold text-lg animate-pulse">Đang tải đề thi...</p>
-          <p className="text-gray-500 text-sm">Vui lòng đợi trong giây lát</p>
-        </div>
-      )}
-
       {showRestoreToast && (
         <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[90] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-bounce">
           <i className="fa-solid fa-circle-check text-green-400"></i>
@@ -204,77 +108,61 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <Header
-        title={currentView === 'subjects' ? 'Trắc nghiệm Online' : (currentSubject?.ten || 'Trắc nghiệm')}
-        onBack={handleBack}
-        showBack={currentView !== 'subjects' && currentView !== 'admin-login' && currentView !== 'admin-dashboard'}
-        onShowHistory={() => currentSubject && setCurrentView('history')}
-        disableHistory={!currentSubject || currentView === 'quiz' || currentView === 'history'}
+      <Header 
+        title={title} 
+        showBack={showBack} 
+        onBack={handleBack} 
+        onShowHistory={() => idStr && navigate(`/history/${idStr}`)} 
+        disableHistory={!idStr || isQuizView || isHistoryView || !!matchDeCuong}
       />
-
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
-        {currentView === 'subjects' && (
-          <SubjectList onSelectSubject={handleSelectSubject} />
-        )}
-
-        {currentView === 'modes' && currentSubject && (
-          <ModeSelection subject={currentSubject} onStart={startExam} />
-        )}
-
-        {currentView === 'quiz' && (
-          <QuizView
-            questions={questionList}
-            currentIndex={currentIndex}
-            userAnswers={userAnswers}
-            timeLeft={timeLeft}
-            setTimeLeft={setTimeLeft}
-            isReviewMode={isReviewMode}
-            isHistoryReview={isHistoryReview}
-            setCurrentIndex={setCurrentIndex}
-            setUserAnswers={setUserAnswers}
-            subjectId={currentSubject?.id || 0}
-            onFinish={() => {
-              localStorage.removeItem(SESSION_KEY);
-              setIsHistoryReview(true);
-            }}
-            onExitHistory={() => {
-              setIsHistoryReview(false);
-              setCurrentView('history');
-            }}
-          />
-        )}
-
-        {currentView === 'history' && currentSubject && (
-          <HistoryView
-            subject={currentSubject}
-            onViewDetail={handleViewHistoryDetail}
-          />
-        )}
-
-        {currentView === 'admin-login' && (
-          <AdminLogin 
-            onLoginSuccess={handleAdminLoginSuccess} 
-            onBack={() => setCurrentView('subjects')} 
-          />
-        )}
-
-        {currentView === 'admin-dashboard' && adminToken && (
-          <AdminDashboard 
-            token={adminToken} 
-            onLogout={handleAdminLogout} 
-          />
-        )}
-
-
+        {children}
       </main>
-
-      {(currentView !== 'admin-login' && currentView !== 'admin-dashboard') && (
-        <Footer 
-          visitorCount={visitorCount} 
-          onAdminClick={() => setCurrentView('admin-login')} 
-        />
+      {location.pathname !== '/admin-login' && location.pathname !== '/admin-dashboard' && (
+          <Footer visitorCount={visitorCount} onAdminClick={() => navigate('/admin-login')} />
       )}
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('admin_auth_token'));
+
+  return (
+    <BrowserRouter>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<SubjectList onSelectSubject={() => {}} />} />
+          <Route path="/monhoc/:id" element={<ModeSelection subject={{ id: 0, ten: '' }} onStart={() => {}} />} />
+          <Route path="/thi-thu/:id" element={<QuizWrapper />} />
+          <Route path="/on-tap/:id" element={<QuizWrapper />} />
+          <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />
+          <Route path="/history/:id" element={<HistoryView subject={{ id: 0, ten: '' }} onViewDetail={() => {}} />} />
+          
+          <Route path="/admin-login" element={
+            <AdminLogin 
+              onLoginSuccess={(token) => setAdminToken(token)} 
+              onBack={() => window.location.href = '/'} 
+            />
+          } />
+          
+          <Route path="/admin-dashboard" element={
+            adminToken ? (
+              <AdminDashboard 
+                token={adminToken} 
+                onLogout={() => {
+                  localStorage.removeItem('admin_auth_token');
+                  setAdminToken(null);
+                  window.location.href = '/';
+                }} 
+              />
+            ) : (
+              <div className="p-8 text-center text-red-500">Bạn chưa đăng nhập. <a href="/admin-login" className="underline">Đăng nhập</a></div>
+            )
+          } />
+        </Routes>
+      </AppLayout>
+    </BrowserRouter>
   );
 };
 
