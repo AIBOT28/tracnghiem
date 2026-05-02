@@ -6,11 +6,10 @@ interface HeaderProps {
   showBack: boolean;
   onBack: () => void;
   onShowHistory: () => void;
-  onShowChat: () => void;
   disableHistory: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBack, onBack, onShowHistory, onShowChat, disableHistory }) => {
+const Header: React.FC<HeaderProps> = ({ title, showBack, onBack, onShowHistory, disableHistory }) => {
   return (
     <div className="bg-blue-600 text-white px-4 flex justify-between items-center shadow-md z-20 shrink-0 h-14">
       <button 
@@ -26,13 +25,6 @@ const Header: React.FC<HeaderProps> = ({ title, showBack, onBack, onShowHistory,
       </span>
 
       <div className="w-20 flex justify-end gap-1">
-        <button 
-          onClick={onShowChat}
-          className="text-white hover:bg-white/20 p-2 rounded-full transition"
-          title="Chat Realtime"
-        >
-          <i className="fa-solid fa-comments"></i>
-        </button>
         {!disableHistory && (
           <button 
             onClick={onShowHistory}

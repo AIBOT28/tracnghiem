@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Question } from '../types';
-import { API_BASE_URL, API_HEADERS } from '../constants';
+import { API_BASE_URL, API_HEADERS, CACHE_KEY_SYLLABUS, CACHE_TIME } from '../constants';
 import { decryptData } from '../crypto';
 
 const ChapterQuestionList: React.FC = () => {
@@ -12,16 +12,34 @@ const ChapterQuestionList: React.FC = () => {
 
   useEffect(() => {
     const fetchQuestions = async () => {
+      const cacheKey = `${CACHE_KEY_SYLLABUS}${id}_${chapterId}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        if (new Date().getTime() - parsed.timestamp < CACHE_TIME) {
+          setQuestions(parsed.data);
+          setLoading(false);
+          return;
+        }
+      }
+
       try {
         const res = await fetch(`${API_BASE_URL}/generate?subjectId=${id}&mode=on_chuong&chapterId=${chapterId}`, { headers: API_HEADERS });
         if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
-        
+
+        let questionsData = [];
         if (data.encryptedData) {
-            setQuestions(decryptData(data.encryptedData));
+          questionsData = decryptData(data.encryptedData);
         } else {
-            setQuestions(data);
+          questionsData = data;
         }
+        setQuestions(questionsData);
+
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data: questionsData,
+          timestamp: new Date().getTime()
+        }));
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,7 +50,7 @@ const ChapterQuestionList: React.FC = () => {
   }, [id, chapterId]);
 
   if (loading) {
-     return <div className="flex-grow flex items-center justify-center text-gray-500 h-full"><i className="fa-solid fa-spinner fa-spin mr-2 text-2xl"></i>Đang tải danh sách câu hỏi...</div>;
+    return <div className="flex-grow flex items-center justify-center text-gray-500 h-full"><i className="fa-solid fa-spinner fa-spin mr-2 text-2xl"></i>Đang tải danh sách câu hỏi...</div>;
   }
 
   return (
@@ -46,25 +64,25 @@ const ChapterQuestionList: React.FC = () => {
         </div>
         <div className="space-y-6 pb-10">
           {questions.map((q, idx) => (
-             <div key={idx} className="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-800 mb-4 text-lg">Câu {idx + 1}: {q.text}</h3>
-                <div className="space-y-3">
-                  {q.answers.map((ans, ansIdx) => {
-                    const displayLetter = String.fromCharCode(65 + ansIdx);
-                    return (
-                      <div key={ans.key} className={`p-4 rounded-lg border-2 ${ans.key === q.correct ? 'bg-green-50 border-green-500 text-green-800 font-medium' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
-                        <span className="font-bold mr-2">{displayLetter}.</span> {ans.text}
-                        {ans.key === q.correct && <i className="fa-solid fa-circle-check ml-2 text-green-600 text-lg float-right"></i>}
-                      </div>
-                    );
-                  })}
+            <div key={idx} className="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-200">
+              <h3 className="font-bold text-gray-800 mb-4 text-lg">Câu {idx + 1}: {q.text}</h3>
+              <div className="space-y-3">
+                {q.answers.map((ans, ansIdx) => {
+                  const displayLetter = String.fromCharCode(65 + ansIdx);
+                  return (
+                    <div key={ans.key} className={`p-4 rounded-lg border-2 ${ans.key === q.correct ? 'bg-green-50 border-green-500 text-green-800 font-medium' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+                      <span className="font-bold mr-2">{displayLetter}.</span> {ans.text}
+                      {ans.key === q.correct && <i className="fa-solid fa-circle-check ml-2 text-green-600 text-lg float-right"></i>}
+                    </div>
+                  );
+                })}
+              </div>
+              {q.explanation && (
+                <div className="mt-4 text-sm text-yellow-800 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100">
+                  <strong><i className="fa-regular fa-lightbulb text-yellow-500 mr-1"></i> Giải thích:</strong> {q.explanation}
                 </div>
-                {q.explanation && (
-                  <div className="mt-4 text-sm text-yellow-800 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100">
-                    <strong><i className="fa-regular fa-lightbulb text-yellow-500 mr-1"></i> Giải thích:</strong> {q.explanation}
-                  </div>
-                )}
-             </div>
+              )}
+            </div>
           ))}
           {questions.length === 0 && (
             <div className="text-center text-gray-500 py-10 bg-white rounded-xl border border-gray-200">

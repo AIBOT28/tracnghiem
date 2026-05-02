@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Subject, ExamMode, Chapter } from '../types';
-import { API_BASE_URL, API_HEADERS, CACHE_KEY_SUBJECTS } from '../constants';
+import { API_BASE_URL, API_HEADERS, CACHE_KEY_SUBJECTS, CACHE_KEY_CHAPTERS, CACHE_TIME } from '../constants';
 
 interface ModeSelectionProps {
   subject?: Subject;
@@ -12,7 +12,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [subject, setSubject] = useState<Subject | null>(null);
-  
+
   const [showReviewOptions, setShowReviewOptions] = useState(false);
   const [showSyllabusPopup, setShowSyllabusPopup] = useState(false);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -47,12 +47,29 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
 
   useEffect(() => {
     const fetchChapters = async () => {
+      const cacheKey = `${CACHE_KEY_CHAPTERS}${id}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        if (new Date().getTime() - parsed.timestamp < CACHE_TIME) {
+          setChapters(parsed.data);
+          if (parsed.data.length > 0) setSelectedChapter(parsed.data[0].name);
+          setLoadingChapters(false);
+          return;
+        }
+      }
+
       setLoadingChapters(true);
       try {
         const res = await fetch(`${API_BASE_URL}/chapters/${id}`, { headers: API_HEADERS });
         const data = await res.json();
         setChapters(data);
         if (data.length > 0) setSelectedChapter(data[0].name);
+
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data,
+          timestamp: new Date().getTime()
+        }));
       } catch (e) {
         console.error("Chapters load error", e);
       } finally {
@@ -74,7 +91,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
         </div>
 
         <div className="space-y-4">
-          <Link 
+          <Link
             to={`/thi-thu/${subject.id}`}
             className="group block bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all relative overflow-hidden"
           >
@@ -86,7 +103,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
           </Link>
 
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all">
-            <div 
+            <div
               onClick={() => setShowReviewOptions(!showReviewOptions)}
               className="p-5 cursor-pointer hover:bg-gray-50 flex items-center justify-between relative"
             >
@@ -101,19 +118,19 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
             {showReviewOptions && (
               <div className="bg-gray-50 border-t border-gray-100 p-5 space-y-3">
                 <p className="text-gray-500 text-sm mt-1">Ôn tập ngẫu nhiên 60 câu:</p>
-                <button 
+                <button
                   onClick={() => navigate(`/on-tap/${subject.id}?mode=on_ngaunhien`)}
                   className="w-full bg-white border border-gray-200 hover:border-blue-400 py-3 rounded-lg shadow-sm font-medium transition"
                 >
                   60 Câu ngẫu nhiên
                 </button>
-                
+
                 <p className="text-gray-500 text-sm mt-1">Hoặc ôn tập theo chương:</p>
                 {loadingChapters ? (
                   <p className="text-xs text-gray-400 italic">Đang tải chương...</p>
                 ) : (
                   <>
-                    <select 
+                    <select
                       value={selectedChapter}
                       onChange={(e) => setSelectedChapter(e.target.value)}
                       className="block w-full p-3 border rounded-lg bg-white"
@@ -124,7 +141,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
                         <option value="">Chưa có chương</option>
                       )}
                     </select>
-                    <button 
+                    <button
                       onClick={() => navigate(`/on-tap/${subject.id}?mode=on_chuong&chapterId=${selectedChapter}`)}
                       disabled={!selectedChapter}
                       className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition disabled:bg-gray-400"
@@ -136,8 +153,8 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
               </div>
             )}
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setShowSyllabusPopup(true)}
             className="w-full group bg-white border border-gray-200 p-5 rounded-xl cursor-pointer hover:border-yellow-500 hover:shadow-lg transition-all flex items-center relative overflow-hidden"
           >
@@ -172,7 +189,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
                 </div>
               ) : chapters.length > 0 ? (
                 chapters.map(c => (
-                  <Link 
+                  <Link
                     key={c.name}
                     to={`/de-cuong/${subject.id}/chuong/${c.name}`}
                     className="block p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-300 transition font-medium text-gray-700 flex justify-between items-center"
