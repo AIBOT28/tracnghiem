@@ -27,6 +27,10 @@
       "destination": "http://tracnghiemapi.runasp.net/visitorHub/:path*"
     },
     {
+      "source": "/chatHub/:path*",
+      "destination": "http://chathuit.runasp.net/chatHub/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

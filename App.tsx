@@ -13,6 +13,7 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
+import ChatRoom from './components/ChatRoom';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -149,6 +150,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         showBack={showBack} 
         onBack={handleBack} 
         onShowHistory={() => idStr && navigate(`/history/${idStr}`)} 
+        onShowChat={() => navigate('/chat')}
         disableHistory={!idStr || isQuizView || isHistoryView || !!matchDeCuong}
       />
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
@@ -175,6 +177,7 @@ const App: React.FC = () => {
           <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />
           <Route path="/history/:id" element={<HistoryView />} />
           <Route path="/history/:id/detail" element={<HistoryDetailWrapper />} />
+          <Route path="/chat" element={<ChatRoom />} />
           
           <Route path="/admin-login" element={
             <AdminLogin 
