@@ -11,6 +11,7 @@ import HistoryView from './components/HistoryView';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ChapterQuestionList from './components/ChapterQuestionList';
+import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -139,7 +140,8 @@ const App: React.FC = () => {
           <Route path="/thi-thu/:id" element={<QuizWrapper />} />
           <Route path="/on-tap/:id" element={<QuizWrapper />} />
           <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />
-          <Route path="/history/:id" element={<HistoryView subject={{ id: 0, ten: '' }} onViewDetail={() => {}} />} />
+          <Route path="/history/:id" element={<HistoryView />} />
+          <Route path="/history/:id/detail" element={<HistoryDetailWrapper />} />
           
           <Route path="/admin-login" element={
             <AdminLogin 

@@ -1,20 +1,26 @@
-
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Subject, HistoryItem } from '../types';
+import { CACHE_KEY_SUBJECTS } from '../constants';
 
-interface HistoryViewProps {
-  subject: Subject;
-  onViewDetail: (item: HistoryItem) => void;
-}
-
-const HistoryView: React.FC<HistoryViewProps> = ({ subject, onViewDetail }) => {
+const HistoryView: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const historyKey = `history_sub_${subject.id}`;
+  const [subject, setSubject] = useState<Subject>({ id: parseInt(id || '0'), ten: 'Môn học' });
+  const historyKey = `history_sub_${id}`;
 
   useEffect(() => {
+    const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
+    if (cachedData) {
+      const parsed = JSON.parse(cachedData);
+      const subj = parsed.data.find((s: Subject) => s.id.toString() === id);
+      if (subj) setSubject(subj);
+    }
+
     const data = localStorage.getItem(historyKey);
     if (data) setHistory(JSON.parse(data));
-  }, [historyKey]);
+  }, [id, historyKey]);
 
   const clearHistory = () => {
     if (window.confirm(`Xóa toàn bộ lịch sử môn "${subject.ten}"?`)) {
@@ -45,7 +51,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ subject, onViewDetail }) => {
           {history.map((item, index) => (
             <div 
               key={index} 
-              onClick={() => onViewDetail(item)}
+              onClick={() => navigate(`/history/${id}/detail`, { state: { item } })}
               className="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center shadow-sm cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition animate-fade-in"
             >
               <div>
