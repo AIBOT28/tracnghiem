@@ -24,7 +24,7 @@
     },
     {
       "source": "/visitorHub/:path*",
-      "destination": "http://tracnghiemapi.runasp.net/visitorHub/:path*"
+      "destination": "http://socket.runasp.net/visitorHub/:path*"
     },
     {
       "source": "/chatHub/:path*",
