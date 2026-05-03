@@ -4,31 +4,31 @@
   "rewrites": [
     {
       "source": "/nldk/Exam/:path*",
-      "destination": "https://tracnghiemapi.runasp.net/api/Exam/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/Exam/:path*"
     },
     {
       "source": "/api/Auth/:path*",
-      "destination": "https://tracnghiemapi.runasp.net/api/Auth/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/Auth/:path*"
     },
     {
       "source": "/api/MonHocs/:path*",
-      "destination": "https://tracnghiemapi.runasp.net/api/MonHocs/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/MonHocs/:path*"
     },
     {
       "source": "/api/Chuongs/:path*",
-      "destination": "https://tracnghiemapi.runasp.net/api/Chuongs/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/Chuongs/:path*"
     },
     {
       "source": "/api/CauHois/:path*",
-      "destination": "https://tracnghiemapi.runasp.net/api/CauHois/:path*"
+      "destination": "http://tracnghiemapi.runasp.net/api/CauHois/:path*"
     },
     {
       "source": "/visitorHub/:path*",
-      "destination": "https://socket.runasp.net/visitorHub/:path*"
+      "destination": "http://socket.runasp.net/visitorHub/:path*"
     },
     {
       "source": "/chatHub/:path*",
-      "destination": "https://chathuit.runasp.net/chatHub/:path*"
+      "destination": "http://chathuit.runasp.net/chatHub/:path*"
     },
     {
       "source": "/(.*)",
