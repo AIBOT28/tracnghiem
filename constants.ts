@@ -1,6 +1,6 @@
 const BASE_URL = 'https://backend.nguyenledangkhoa146205.workers.dev';
 
-export const API_BASE_URL = `${BASE_URL}/nldk/Exam`;
+export const API_BASE_URL = `${BASE_URL}/Exam`;
 export const AUTH_API_URL = `${BASE_URL}/api/Auth`; // URL của backend API cho auth
 export const MONHOC_API_URL = `${BASE_URL}/api/MonHocs`;
 export const CHUONG_API_URL = `${BASE_URL}/api/Chuongs`;
