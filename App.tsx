@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { Subject, SessionData } from './types';
 import { SESSION_KEY, CACHE_KEY_SUBJECTS } from './constants';
-import * as signalR from '@microsoft/signalr';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
@@ -12,7 +11,7 @@ import HistoryView from './components/HistoryView';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 
-const AppLayout: React.FC<{ children: React.ReactNod }> = ({ children }) => {
+const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [totalVisitorCount, setTotalVisitorCount] = useState<string>('...');
