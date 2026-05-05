@@ -1,4 +1,4 @@
-const BASE_URL = 'https://backend.nguyenledangkhoa146205.workers.dev';
+const BASE_URL = 'https://backend.nguyenledangkhoa-it.workers.dev/';
 
 export const API_BASE_URL = `${BASE_URL}/api/Exam`;
 export const AUTH_API_URL = `${BASE_URL}/api/Auth`; // URL của backend API cho auth
