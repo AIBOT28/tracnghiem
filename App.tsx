@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { Subject, SessionData } from './types';
-import { SESSION_KEY, CACHE_KEY_SUBJECTS, WS_URL } from './constants';
+import { SESSION_KEY, CACHE_KEY_SUBJECTS } from './constants';
 import * as signalR from '@microsoft/signalr';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -12,10 +12,9 @@ import HistoryView from './components/HistoryView';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 
-const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AppLayout: React.FC<{ children: React.ReactNod }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [visitorCount, setVisitorCount] = useState<string>('...');
   const [totalVisitorCount, setTotalVisitorCount] = useState<string>('...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
 
@@ -37,36 +36,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updateTotalVisitorCount();
   }, []);
 
-  useEffect(() => {
-    let connection: signalR.HubConnection;
 
-    const setupSignalR = async () => {
-      connection = new signalR.HubConnectionBuilder()
-        .withUrl(WS_URL, {
-          transport: signalR.HttpTransportType.LongPolling
-        })
-        .withAutomaticReconnect()
-        .build();
-
-      connection.on("UpdateVisitorCount", (count: number) => {
-        setVisitorCount(count.toString());
-      });
-
-      try {
-        await connection.start();
-      } catch (err) {
-        console.error("SignalR Connection Error: ", err);
-      }
-    };
-
-    setupSignalR();
-
-    return () => {
-      if (connection) {
-        connection.stop();
-      }
-    };
-  }, []);
 
   // Session restoration
   useEffect(() => {
@@ -94,7 +64,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   let title = 'Trắc nghiệm Online';
   let showBack = location.pathname !== '/';
-  
+
   let idStr = '';
   const matchMonHoc = matchPath('/monhoc/:id', location.pathname);
   const matchThiThu = matchPath('/thi-thu/:id', location.pathname);
@@ -104,15 +74,15 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const match = matchMonHoc || matchThiThu || matchOnTap || matchHistory || matchDeCuong;
   if (match && match.params.id) {
-      idStr = match.params.id;
-      const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        const subj = parsed.data.find((s: Subject) => s.id.toString() === idStr);
-        if (subj) title = subj.ten;
-      } else {
-        title = 'Trắc nghiệm';
-      }
+    idStr = match.params.id;
+    const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
+    if (cachedData) {
+      const parsed = JSON.parse(cachedData);
+      const subj = parsed.data.find((s: Subject) => s.id.toString() === idStr);
+      if (subj) title = subj.ten;
+    } else {
+      title = 'Trắc nghiệm';
+    }
   }
 
   const searchParams = new URLSearchParams(location.search);
@@ -142,17 +112,17 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       )}
 
-      <Header 
-        title={title} 
-        showBack={showBack} 
-        onBack={handleBack} 
-        onShowHistory={() => idStr && navigate(`/history/${idStr}`)} 
+      <Header
+        title={title}
+        showBack={showBack}
+        onBack={handleBack}
+        onShowHistory={() => idStr && navigate(`/history/${idStr}`)}
         disableHistory={!idStr || isQuizView || isHistoryView || !!matchDeCuong}
       />
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
         {children}
       </main>
-      <Footer visitorCount={visitorCount} totalVisitorCount={totalVisitorCount} />
+      <Footer totalVisitorCount={totalVisitorCount} />
     </div>
   );
 };
@@ -162,8 +132,8 @@ const App: React.FC = () => {
     <BrowserRouter>
       <AppLayout>
         <Routes>
-          <Route path="/" element={<SubjectList onSelectSubject={() => {}} />} />
-          <Route path="/monhoc/:id" element={<ModeSelection subject={{ id: 0, ten: '' }} onStart={() => {}} />} />
+          <Route path="/" element={<SubjectList onSelectSubject={() => { }} />} />
+          <Route path="/monhoc/:id" element={<ModeSelection subject={{ id: 0, ten: '' }} onStart={() => { }} />} />
           <Route path="/thi-thu/:id" element={<QuizWrapper />} />
           <Route path="/on-tap/:id" element={<QuizWrapper />} />
           <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />

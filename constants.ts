@@ -5,7 +5,6 @@ export const AUTH_API_URL = `${BASE_URL}/api/Auth`; // URL của backend API cho
 export const MONHOC_API_URL = `${BASE_URL}/api/MonHocs`;
 export const CHUONG_API_URL = `${BASE_URL}/api/Chuongs`;
 export const CAUHOI_API_URL = `${BASE_URL}/api/CauHois`;
-export const WS_URL = `${BASE_URL}/visitorHub`;
 export const SESSION_KEY = 'exam_ongoing_session';
 export const CACHE_KEY_SUBJECTS = 'danh_sach_mon_hoc';
 export const CACHE_KEY_CHAPTERS = 'danh_sach_chuong_';
