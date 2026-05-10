@@ -33,7 +33,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          const count = data.count.toLocaleString();
+          const countValue = data.value ?? data.count ?? 0;
+          const count = countValue.toLocaleString();
           setTotalVisitorCount(count);
           localStorage.setItem('cached_visitor_count', count);
           if (!hasIncremented) {
