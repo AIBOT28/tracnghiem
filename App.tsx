@@ -14,22 +14,34 @@ import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [totalVisitorCount, setTotalVisitorCount] = useState<string>('...');
+  const [totalVisitorCount, setTotalVisitorCount] = useState<string>(localStorage.getItem('cached_visitor_count') || '...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
 
   useEffect(() => {
     const updateTotalVisitorCount = async () => {
       try {
-        const namespace = 'tracnghiem_nldk_project';
-        const key = 'visits';
-        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
+        const workspace = 'tracnghiemhuit';
+        const counterName = 'first-counter-3695';
+        const sessionKey = `counted_${workspace}_${counterName}`;
+        const hasIncremented = sessionStorage.getItem(sessionKey);
+
+        let url = `https://api.counterapi.dev/v2/${workspace}/${counterName}`;
+        if (!hasIncremented) {
+          url += '/up';
+        }
+
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          setTotalVisitorCount(data.count.toLocaleString());
+          const count = data.count.toLocaleString();
+          setTotalVisitorCount(count);
+          localStorage.setItem('cached_visitor_count', count);
+          if (!hasIncremented) {
+            sessionStorage.setItem(sessionKey, 'true');
+          }
         }
       } catch (error) {
         console.error("Visitor count error:", error);
-        setTotalVisitorCount('err');
       }
     };
     updateTotalVisitorCount();
