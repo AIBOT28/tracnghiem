@@ -62,7 +62,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
             <div className="h-1.5 w-16 bg-blue-500 rounded-full mb-4 opacity-20"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto px-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto px-2">
             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
               <div className="bg-amber-100 p-3 rounded-xl text-amber-600 flex-shrink-0">
                 <i className="fa-solid fa-clock-rotate-left text-xl"></i>
@@ -75,25 +75,13 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="bg-blue-100 p-3 rounded-xl text-blue-600 flex-shrink-0">
-                <i className="fa-solid fa-bolt text-xl"></i>
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="bg-red-100 p-3 rounded-xl text-red-600 flex-shrink-0">
+                <i className="fa-solid fa-lock text-xl"></i>
               </div>
               <div>
-                <h4 className="font-bold text-blue-900 text-sm mb-0.5">Trải nghiệm mượt mà</h4>
-                <p className="text-blue-800 text-xs leading-relaxed">
-                  Website <span className="font-bold text-blue-950 underline decoration-blue-300">không giới hạn</span> lượt làm bài. Hệ thống luôn duy trì trạng thái ổn định ngay cả khi truy cập cao.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="bg-blue-100 p-3 rounded-xl text-blue-600 flex-shrink-0">
-                <i className="fa-solid fa-bolt text-xl"></i>
-              </div>
-              <div>
-                <h4 className="font-bold text-blue-900 text-sm mb-0.5">Truy cập miễn phí</h4>
-                <p className="text-blue-800 text-xs leading-relaxed">
+                <h4 className="font-bold text-red-900 text-sm mb-0.5">Truy cập miễn phí</h4>
+                <p className="text-red-800 text-xs leading-relaxed">
                   NLDK không thu bất kỳ chi phí nào. Mục địch phát triển website này giúp cho sinh viên có nguồn tài liệu ôn tập miễn phí. Không cần mua từ bất cứ bên nào.
                 </p>
               </div>
