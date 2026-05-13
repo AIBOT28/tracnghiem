@@ -11,13 +11,25 @@ import HistoryView from './components/HistoryView';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
 
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminSubjects from './components/AdminSubjects';
+import AdminChapters from './components/AdminChapters';
+import AdminQuestions from './components/AdminQuestions';
+
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [totalVisitorCount, setTotalVisitorCount] = useState<string>(localStorage.getItem('cached_visitor_count') || '...');
   const [showRestoreToast, setShowRestoreToast] = useState(false);
 
+  // Check if we are in admin area
+  const isAdminArea = location.pathname.startsWith('/admin');
+
   useEffect(() => {
+    // Only update visitor count on public pages
+    if (isAdminArea) return;
+
     const updateTotalVisitorCount = async () => {
       try {
         const workspace = 'tracnghiemhuit';
@@ -46,12 +58,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
     };
     updateTotalVisitorCount();
-  }, []);
+  }, [isAdminArea]);
 
 
 
   // Session restoration
   useEffect(() => {
+    if (isAdminArea) return;
+
     const dataStr = localStorage.getItem(SESSION_KEY);
     if (dataStr && location.pathname === '/') {
       const data: SessionData = JSON.parse(dataStr);
@@ -72,10 +86,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         localStorage.removeItem(SESSION_KEY);
       }
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, isAdminArea]);
 
   let title = 'Trắc nghiệm Online';
-  let showBack = location.pathname !== '/';
+  let showBack = location.pathname !== '/' && !isAdminArea;
 
   let idStr = '';
   const matchMonHoc = matchPath('/monhoc/:id', location.pathname);
@@ -124,17 +138,19 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       )}
 
-      <Header
-        title={title}
-        showBack={showBack}
-        onBack={handleBack}
-        onShowHistory={() => idStr && navigate(`/history/${idStr}`)}
-        disableHistory={!idStr || isQuizView || isHistoryView || !!matchDeCuong}
-      />
+      {!isAdminArea && (
+        <Header
+          title={title}
+          showBack={showBack}
+          onBack={handleBack}
+          onShowHistory={() => idStr && navigate(`/history/${idStr}`)}
+          disableHistory={!idStr || isQuizView || isHistoryView || !!matchDeCuong}
+        />
+      )}
       <main className="flex-grow overflow-hidden relative flex flex-col bg-gray-50">
         {children}
       </main>
-      <Footer totalVisitorCount={totalVisitorCount} />
+      {!isAdminArea && <Footer totalVisitorCount={totalVisitorCount} />}
     </div>
   );
 };
@@ -151,6 +167,13 @@ const App: React.FC = () => {
           <Route path="/de-cuong/:id/chuong/:chapterId" element={<ChapterQuestionList />} />
           <Route path="/history/:id" element={<HistoryView />} />
           <Route path="/history/:id/detail" element={<HistoryDetailWrapper />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/subjects" element={<AdminSubjects />} />
+          <Route path="/admin/chapters" element={<AdminChapters />} />
+          <Route path="/admin/questions" element={<AdminQuestions />} />
         </Routes>
       </AppLayout>
     </BrowserRouter>

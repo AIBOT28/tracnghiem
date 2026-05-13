@@ -48,4 +48,29 @@ export interface SessionData {
   timestamp: number;
 }
 
-export type View = 'subjects' | 'modes' | 'quiz' | 'history';
+export interface QuestionAdmin {
+  maCauHoi: number;
+  noiDung: string;
+  dapAnA: string;
+  dapAnB: string;
+  dapAnC: string;
+  dapAnD: string;
+  dapAnDung: string;
+  maMonHoc?: number;
+  maChuong?: number;
+  tenMonHoc?: string;
+  tenChuong?: string;
+}
+
+export interface ChapterAdmin {
+  maChuong: number;
+  tenChuong: string;
+}
+
+export interface AdminStats {
+  totalSubjects: number;
+  totalChapters: number;
+  totalQuestions: number;
+}
+
+export type View = 'subjects' | 'modes' | 'quiz' | 'history' | 'admin';
