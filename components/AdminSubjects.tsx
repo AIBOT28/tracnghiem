@@ -21,7 +21,11 @@ const AdminSubjects: React.FC = () => {
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        setSubjects(await response.json());
+        const data = await response.json();
+        setSubjects(data.map((s: any) => ({
+          id: s.maMh,
+          ten: s.tenMh
+        })));
       }
     } catch (error) {
       console.error(error);

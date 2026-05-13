@@ -68,7 +68,13 @@ const AdminQuestions: React.FC = () => {
         const subRes = await fetch(MONHOC_API_URL, { 
           headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` } 
         });
-        if (subRes.ok) setSubjects(await subRes.json());
+        if (subRes.ok) {
+          const data = await subRes.json();
+          setSubjects(data.map((s: any) => ({
+            id: s.maMh,
+            ten: s.tenMh
+          })));
+        }
       } catch (error) { console.error(error); }
     };
 
