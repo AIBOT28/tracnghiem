@@ -6,6 +6,7 @@ export interface Subject {
 }
 
 export interface Chapter {
+  id: number;
   name: string;
 }
 

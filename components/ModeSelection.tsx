@@ -53,7 +53,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
         const parsed = JSON.parse(cachedData);
         if (new Date().getTime() - parsed.timestamp < CACHE_TIME) {
           setChapters(parsed.data);
-          if (parsed.data.length > 0) setSelectedChapter(parsed.data[0].name);
+          if (parsed.data.length > 0) setSelectedChapter(parsed.data[0].id.toString());
           setLoadingChapters(false);
           return;
         }
@@ -64,7 +64,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
         const res = await fetch(`${API_BASE_URL}/chapters/${id}`, { headers: API_HEADERS });
         const data = await res.json();
         setChapters(data);
-        if (data.length > 0) setSelectedChapter(data[0].name);
+        if (data.length > 0) setSelectedChapter(data[0].id.toString());
 
         localStorage.setItem(cacheKey, JSON.stringify({
           data,
@@ -136,7 +136,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
                       className="block w-full p-3 border rounded-lg bg-white"
                     >
                       {chapters.length > 0 ? (
-                        chapters.map(c => <option key={c.name} value={c.name}>Chương {c.name}</option>)
+                        chapters.map(c => <option key={c.id} value={c.id.toString()}>Chương {c.name}</option>)
                       ) : (
                         <option value="">Chưa có chương</option>
                       )}
@@ -190,8 +190,8 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
               ) : chapters.length > 0 ? (
                 chapters.map(c => (
                   <Link
-                    key={c.name}
-                    to={`/de-cuong/${subject.id}/chuong/${c.name}`}
+                    key={c.id}
+                    to={`/de-cuong/${subject.id}/chuong/${c.id}`}
                     className="block p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-300 transition font-medium text-gray-700 flex justify-between items-center"
                   >
                     <span>Chương {c.name}</span>
