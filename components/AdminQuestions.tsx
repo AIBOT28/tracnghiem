@@ -15,6 +15,7 @@ const AdminQuestions: React.FC = () => {
   // Filters
   const [selectedSubject, setSelectedSubject] = useState<number | ''>('');
   const [selectedChapter, setSelectedChapter] = useState<number | ''>('');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -41,6 +42,7 @@ const AdminQuestions: React.FC = () => {
       let url = `${CAUHOI_API_URL}?page=${page}&pageSize=${pageSize}`;
       if (selectedSubject) url += `&subjectId=${selectedSubject}`;
       if (selectedChapter) url += `&chapterId=${selectedChapter}`;
+      if (searchKeyword) url += `&search=${encodeURIComponent(searchKeyword)}`;
 
       const response = await fetch(url, {
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
@@ -55,7 +57,7 @@ const AdminQuestions: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, page, pageSize, selectedSubject, selectedChapter]);
+  }, [token, page, pageSize, selectedSubject, selectedChapter, searchKeyword]);
 
   useEffect(() => {
     if (!token) {
@@ -304,6 +306,17 @@ const AdminQuestions: React.FC = () => {
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input 
+              type="text" 
+              placeholder="Tìm kiếm câu hỏi..." 
+              value={searchKeyword}
+              onChange={(e) => { setSearchKeyword(e.target.value); setPage(1); }}
+              className="text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-gray-50 w-64"
+            />
+          </div>
+
           <select 
             value={selectedSubject} 
             onChange={(e) => { setSelectedSubject(e.target.value ? Number(e.target.value) : ''); setPage(1); }}
