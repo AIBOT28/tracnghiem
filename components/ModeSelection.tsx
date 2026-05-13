@@ -20,65 +20,51 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
   const [loadingChapters, setLoadingChapters] = useState(false);
 
   useEffect(() => {
-    // Get subject details
-    const fetchSubject = async () => {
-      const cachedData = localStorage.getItem(CACHE_KEY_SUBJECTS);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        const subj = parsed.data.find((s: Subject) => s.id.toString() === id);
-        if (subj) {
-          setSubject(subj);
-          return;
-        }
-      }
-      try {
-        const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
-        if (response.ok) {
-          const data = await response.json();
-          const subj = data.find((s: Subject) => s.id.toString() === id);
-          if (subj) setSubject(subj);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchSubject();
-  }, [id]);
+    if (!id) return;
 
-  useEffect(() => {
-    const fetchChapters = async () => {
-      const cacheKey = `${CACHE_KEY_CHAPTERS}${id}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        if (new Date().getTime() - parsed.timestamp < CACHE_TIME) {
-          setChapters(parsed.data);
-          if (parsed.data.length > 0) setSelectedChapter(parsed.data[0].id.toString());
-          setLoadingChapters(false);
-          return;
-        }
-      }
-
+    const fetchData = async () => {
       setLoadingChapters(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/chapters/${id}`, { headers: API_HEADERS });
-        const data = await res.json();
-        setChapters(data);
-        if (data.length > 0) setSelectedChapter(data[0].id.toString());
+        const { sendBatchRequest } = await import('../batchApi');
+        
+        // Gộp 2 request: Lấy toàn bộ môn học (để tìm môn hiện tại) và lấy Chương của môn đó
+        const results = await sendBatchRequest(API_BASE_URL, [
+          { url: '/Exam/subjects' },
+          { url: `/Exam/chapters/${id}` }
+        ]);
 
-        localStorage.setItem(cacheKey, JSON.stringify({
-          data,
-          timestamp: new Date().getTime()
-        }));
-      } catch (e) {
-        console.error("Chapters load error", e);
+        const subjectsRes = results.find(r => r.url === '/Exam/subjects');
+        const chaptersRes = results.find(r => r.url === `/Exam/chapters/${id}`);
+
+        if (subjectsRes?.status === 200) {
+          const subj = subjectsRes.data.find((s: Subject) => s.id.toString() === id);
+          if (subj) {
+            setSubject(subj);
+            localStorage.setItem(CACHE_KEY_SUBJECTS, JSON.stringify({
+              data: subjectsRes.data,
+              timestamp: new Date().getTime()
+            }));
+          }
+        }
+
+        if (chaptersRes?.status === 200) {
+          setChapters(chaptersRes.data);
+          if (chaptersRes.data.length > 0) setSelectedChapter(chaptersRes.data[0].id.toString());
+          
+          const cacheKey = `${CACHE_KEY_CHAPTERS}${id}`;
+          localStorage.setItem(cacheKey, JSON.stringify({
+            data: chaptersRes.data,
+            timestamp: new Date().getTime()
+          }));
+        }
+      } catch (error) {
+        console.error("Batch load error", error);
       } finally {
         setLoadingChapters(false);
       }
     };
-    if (id) {
-      fetchChapters();
-    }
+
+    fetchData();
   }, [id]);
 
   if (!subject) return <div className="p-8 text-center text-gray-500"><i className="fa-solid fa-circle-notch fa-spin"></i> Đang tải...</div>;

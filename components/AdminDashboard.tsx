@@ -61,7 +61,7 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-3xl font-extrabold text-gray-900">Hệ thống quản trị</h1>
             <p className="text-gray-500 font-medium">Xin chào, Admin!</p>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             className="px-5 py-2.5 bg-white text-red-600 border border-red-100 rounded-xl font-bold shadow-sm hover:bg-red-50 transition-all flex items-center gap-2"
           >
@@ -107,7 +107,7 @@ const AdminDashboard: React.FC = () => {
           <span className="w-1.5 h-6 bg-blue-600 rounded-full"></span>
           Danh mục quản lý
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link to="/admin/subjects" className="group bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-50/50 transition-all duration-300">
             <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
