@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Subject, ExamMode, Chapter } from '../types';
 import { API_BASE_URL, API_HEADERS, CACHE_KEY_SUBJECTS, CACHE_KEY_CHAPTERS, CACHE_TIME } from '../constants';
-import { sendBatchRequest } from '../batchApi.ts';
+import { sendBatchRequest } from './batchApi.ts';
 
 
 interface ModeSelectionProps {
