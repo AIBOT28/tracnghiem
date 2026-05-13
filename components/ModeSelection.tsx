@@ -136,7 +136,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
                       className="block w-full p-3 border rounded-lg bg-white"
                     >
                       {chapters.length > 0 ? (
-                        chapters.map(c => <option key={c.id} value={c.id.toString()}>Chương {c.name}</option>)
+                        chapters.map(c => <option key={c.id} value={c.id.toString()}>{c.name}</option>)
                       ) : (
                         <option value="">Chưa có chương</option>
                       )}
@@ -194,7 +194,7 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
                     to={`/de-cuong/${subject.id}/chuong/${c.id}`}
                     className="block p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-yellow-300 transition font-medium text-gray-700 flex justify-between items-center"
                   >
-                    <span>Chương {c.name}</span>
+                    <span>{c.name}</span>
                     <i className="fa-solid fa-chevron-right text-gray-400 text-sm"></i>
                   </Link>
                 ))
