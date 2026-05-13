@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Subject, ExamMode, Chapter } from '../types';
 import { API_BASE_URL, API_HEADERS, CACHE_KEY_SUBJECTS, CACHE_KEY_CHAPTERS, CACHE_TIME } from '../constants';
+import { sendBatchRequest } from '../batchApi.ts';
+
 
 interface ModeSelectionProps {
   subject?: Subject;
@@ -25,16 +27,14 @@ const ModeSelection: React.FC<ModeSelectionProps> = () => {
     const fetchData = async () => {
       setLoadingChapters(true);
       try {
-        const { sendBatchRequest } = await import('../batchApi');
-        
         // Gộp 2 request: Lấy toàn bộ môn học (để tìm môn hiện tại) và lấy Chương của môn đó
         const results = await sendBatchRequest(API_BASE_URL, [
-          { url: '/Exam/subjects' },
-          { url: `/Exam/chapters/${id}` }
+          { url: '/subjects' },
+          { url: `/chapters/${id}` }
         ]);
 
-        const subjectsRes = results.find(r => r.url === '/Exam/subjects');
-        const chaptersRes = results.find(r => r.url === `/Exam/chapters/${id}`);
+        const subjectsRes = results.find(r => r.url === '/subjects');
+        const chaptersRes = results.find(r => r.url === `/chapters/${id}`);
 
         if (subjectsRes?.status === 200) {
           const subj = subjectsRes.data.find((s: Subject) => s.id.toString() === id);
