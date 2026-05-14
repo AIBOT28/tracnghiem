@@ -56,10 +56,22 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 mt-6">
           <div className="flex flex-col items-center text-center mb-6">
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-1">
               Chọn môn học
             </h2>
-            <div className="h-1.5 w-16 bg-blue-500 rounded-full mb-4 opacity-20"></div>
+            <div className="h-1.5 w-16 bg-blue-500 rounded-full mb-3 opacity-20"></div>
+
+            <div className="w-full max-w-2xl bg-red-50 border-2 border-red-200 p-4 rounded-2xl text-center mb-4 shadow-sm">
+              <p className="text-red-600 font-bold text-lg">
+                ⚠️ Website <span className="underline">tracnghiemhuit.vercel.app</span> sắp ngừng hoạt động!
+              </p>
+              <p className="text-red-500 font-medium mt-1">
+                Vui lòng chuyển sang:
+                <a href="https://tracnghiemhuit.onrender.com/" className="ml-2 text-blue-600 font-extrabold underline hover:text-blue-800 transition-colors">
+                  tracnghiemhuit.onrender.com
+                </a>
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto px-2">
