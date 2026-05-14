@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CHUONG_API_URL, API_HEADERS } from '../constants';
+import { CHUONG_API_URL, API_HEADERS, smartFetch } from '../constants';
 import { ChapterAdmin } from '../types';
 
 const AdminChapters: React.FC = () => {
@@ -17,7 +17,7 @@ const AdminChapters: React.FC = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(CHUONG_API_URL, {
+      const response = await smartFetch(CHUONG_API_URL, {
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -41,7 +41,7 @@ const AdminChapters: React.FC = () => {
   const handleCreate = async () => {
     if (!newChapterName.trim()) return;
     try {
-      const response = await fetch(CHUONG_API_URL, {
+      const response = await smartFetch(CHUONG_API_URL, {
         method: 'POST',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ tenChuong: newChapterName })
@@ -56,7 +56,7 @@ const AdminChapters: React.FC = () => {
   const handleUpdate = async (id: number) => {
     if (!editName.trim()) return;
     try {
-      const response = await fetch(`${CHUONG_API_URL}/${id}`, {
+      const response = await smartFetch(`${CHUONG_API_URL}/${id}`, {
         method: 'PUT',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ maChuong: id, tenChuong: editName })
@@ -71,7 +71,7 @@ const AdminChapters: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa chương này?')) return;
     try {
-      const response = await fetch(`${CHUONG_API_URL}/${id}`, {
+      const response = await smartFetch(`${CHUONG_API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });

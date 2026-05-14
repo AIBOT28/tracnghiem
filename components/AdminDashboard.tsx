@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MONHOC_API_URL, API_HEADERS } from '../constants';
+import { MONHOC_API_URL, API_HEADERS, smartFetch } from '../constants';
 import { AdminStats } from '../types';
 
 const AdminDashboard: React.FC = () => {
@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchStats = async () => {
       try {
-        const response = await fetch(`${MONHOC_API_URL}/stats`, {
+        const response = await smartFetch(`${MONHOC_API_URL}/stats`, {
           headers: {
             ...API_HEADERS,
             'Authorization': `Bearer ${token}`

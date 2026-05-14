@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AUTH_API_URL, API_HEADERS } from '../constants';
+import { AUTH_API_URL, API_HEADERS, smartFetch } from '../constants';
 
 const AdminLogin: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -15,7 +15,7 @@ const AdminLogin: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${AUTH_API_URL}/login-admin`, {
+      const response = await smartFetch(`${AUTH_API_URL}/login-admin`, {
         method: 'POST',
         headers: API_HEADERS,
         body: JSON.stringify({ username, password }),

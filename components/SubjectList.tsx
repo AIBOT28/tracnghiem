@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Subject } from '../types';
-import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME, API_HEADERS } from '../constants';
+import { API_BASE_URL, CACHE_KEY_SUBJECTS, CACHE_TIME, API_HEADERS, smartFetch } from '../constants';
 
 interface SubjectListProps {
   onSelectSubject?: (subject: Subject) => void;
@@ -25,7 +25,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
+        const response = await smartFetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
         if (!response.ok) throw new Error("Lỗi kết nối");
         const data = await response.json();
         setSubjects(data);

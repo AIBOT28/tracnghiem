@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Subject, ExamMode, Question, SessionData } from '../types';
-import { API_BASE_URL, API_HEADERS, SESSION_KEY, CACHE_KEY_SUBJECTS } from '../constants';
+import { API_BASE_URL, API_HEADERS, SESSION_KEY, CACHE_KEY_SUBJECTS, smartFetch } from '../constants';
 import QuizView from './QuizView';
 import { decryptData } from '../crypto';
 
@@ -34,7 +34,7 @@ const QuizWrapper: React.FC = () => {
       }
       if (!subj) {
         try {
-          const response = await fetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
+          const response = await smartFetch(`${API_BASE_URL}/subjects`, { headers: API_HEADERS });
           if (response.ok) {
              const data = await response.json();
              subj = data.find((s: Subject) => s.id.toString() === id);
@@ -73,7 +73,7 @@ const QuizWrapper: React.FC = () => {
         url += `&chapterId=${chapterId}`;
       }
       try {
-        const res = await fetch(url, { headers: API_HEADERS });
+        const res = await smartFetch(url, { headers: API_HEADERS });
         if (!res.ok) throw new Error("Lỗi tải đề thi");
         const data = await res.json();
         

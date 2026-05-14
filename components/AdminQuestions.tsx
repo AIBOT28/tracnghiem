@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CAUHOI_API_URL, MONHOC_API_URL, CHUONG_API_URL, API_HEADERS } from '../constants';
+import { CAUHOI_API_URL, MONHOC_API_URL, CHUONG_API_URL, API_HEADERS, smartFetch } from '../constants';
 import { QuestionAdmin, Subject, ChapterAdmin } from '../types';
 
 const AdminQuestions: React.FC = () => {
@@ -44,7 +44,7 @@ const AdminQuestions: React.FC = () => {
       if (selectedChapter) url += `&chapterId=${selectedChapter}`;
       if (searchKeyword) url += `&search=${encodeURIComponent(searchKeyword)}`;
 
-      const response = await fetch(url, {
+      const response = await smartFetch(url, {
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -67,7 +67,7 @@ const AdminQuestions: React.FC = () => {
 
     const fetchInitialData = async () => {
       try {
-        const subRes = await fetch(MONHOC_API_URL, { 
+        const subRes = await smartFetch(MONHOC_API_URL, { 
           headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` } 
         });
         if (subRes.ok) {
@@ -93,7 +93,7 @@ const AdminQuestions: React.FC = () => {
     const fetchChapters = async () => {
       if (form.maMonHoc) {
         try {
-          const res = await fetch(`${CHUONG_API_URL}/by-subject/${form.maMonHoc}`, {
+          const res = await smartFetch(`${CHUONG_API_URL}/by-subject/${form.maMonHoc}`, {
             headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) setModalChapters(await res.json());
@@ -110,7 +110,7 @@ const AdminQuestions: React.FC = () => {
     const fetchChapters = async () => {
       if (selectedSubject) {
         try {
-          const res = await fetch(`${CHUONG_API_URL}/by-subject/${selectedSubject}`, {
+          const res = await smartFetch(`${CHUONG_API_URL}/by-subject/${selectedSubject}`, {
             headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) setChapters(await res.json());
@@ -126,7 +126,7 @@ const AdminQuestions: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) return;
     try {
-      const response = await fetch(`${CAUHOI_API_URL}/${id}`, {
+      const response = await smartFetch(`${CAUHOI_API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });
@@ -177,7 +177,7 @@ const AdminQuestions: React.FC = () => {
     try {
       const url = isEdit ? `${CAUHOI_API_URL}/${currentId}` : CAUHOI_API_URL;
       const method = isEdit ? 'PUT' : 'POST';
-      const response = await fetch(url, {
+      const response = await smartFetch(url, {
         method,
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)

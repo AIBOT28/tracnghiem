@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { Subject, SessionData } from './types';
-import { SESSION_KEY, CACHE_KEY_SUBJECTS } from './constants';
+import { SESSION_KEY, CACHE_KEY_SUBJECTS, smartFetch } from './constants';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SubjectList from './components/SubjectList';
@@ -42,7 +42,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           url += '/up';
         }
 
-        const response = await fetch(url);
+        const response = await smartFetch(url);
         if (response.ok) {
           const data = await response.json();
           const countValue = data.data?.up_count ?? data.value ?? data.count ?? 0;

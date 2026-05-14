@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MONHOC_API_URL, API_HEADERS } from '../constants';
+import { MONHOC_API_URL, API_HEADERS, smartFetch } from '../constants';
 import { Subject } from '../types';
 
 const AdminSubjects: React.FC = () => {
@@ -17,7 +17,7 @@ const AdminSubjects: React.FC = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(MONHOC_API_URL, {
+      const response = await smartFetch(MONHOC_API_URL, {
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -45,7 +45,7 @@ const AdminSubjects: React.FC = () => {
   const handleCreate = async () => {
     if (!newSubjectName.trim()) return;
     try {
-      const response = await fetch(MONHOC_API_URL, {
+      const response = await smartFetch(MONHOC_API_URL, {
         method: 'POST',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ tenMh: newSubjectName })
@@ -60,7 +60,7 @@ const AdminSubjects: React.FC = () => {
   const handleUpdate = async (id: number) => {
     if (!editName.trim()) return;
     try {
-      const response = await fetch(`${MONHOC_API_URL}/${id}`, {
+      const response = await smartFetch(`${MONHOC_API_URL}/${id}`, {
         method: 'PUT',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ maMh: id, tenMh: editName })
@@ -75,7 +75,7 @@ const AdminSubjects: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Xóa môn học này sẽ ảnh hưởng đến các câu hỏi liên quan. Bạn chắc chắn?')) return;
     try {
-      const response = await fetch(`${MONHOC_API_URL}/${id}`, {
+      const response = await smartFetch(`${MONHOC_API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...API_HEADERS, 'Authorization': `Bearer ${token}` }
       });

@@ -10,6 +10,11 @@ export interface BatchResponse {
   data: any;
 }
 
+// We import from constants at runtime to avoid circular dependency if any, 
+// or just use window.fetch if we don't want to depend on constants.
+// But smartFetch is in constants.ts.
+import { smartFetch } from '../constants';
+
 /**
  * Sends multiple requests in parallel and returns their results.
  * This can be expanded later to use a single /batch endpoint if the backend supports it.
@@ -23,7 +28,7 @@ export async function sendBatchRequest(baseUrl: string, requests: BatchRequest[]
     const fullUrl = `${cleanBaseUrl}${cleanPath}`;
       
     try {
-      const response = await fetch(fullUrl, {
+      const response = await smartFetch(fullUrl, {
         method: req.method || 'GET',
         headers: {
           'Content-Type': 'application/json',
