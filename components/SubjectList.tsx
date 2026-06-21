@@ -53,76 +53,50 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
 
   return (
     <div className="flex-grow overflow-y-auto p-4 bg-gray-50 fade-in">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-8 mt-6">
-          <div className="flex flex-col items-center text-center mb-6">
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-1">
-              Chọn môn học
-            </h2>
-            <div className="h-1.5 w-16 bg-blue-500 rounded-full mb-3 opacity-20"></div>
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6 mt-4">
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+            Danh sách môn học
+          </h2>
 
-            <div className="w-full max-w-2xl bg-red-50 border-2 border-red-200 p-4 rounded-2xl text-center mb-4 shadow-sm">
-              <p className="text-red-600 font-bold text-lg">
-                Website <span className="underline">tracnghiemhuit.vercel.app</span> sắp ngừng hoạt động!
-              </p>
-              <p className="text-red-500 font-medium mt-1">
-                Vui lòng chuyển sang:
-                <a href="https://tracnghiemhuit.onrender.com/" className="ml-2 text-blue-600 font-extrabold underline hover:text-blue-800 transition-colors">
-                  tracnghiemhuit.onrender.com
-                </a>
+          <div className="space-y-3 mb-8 px-2">
+            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm flex items-start gap-3 border border-red-100">
+              <i className="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0"></i>
+              <p className="leading-relaxed">
+                Website <span className="font-semibold">tracnghiemhuit.vercel.app</span> sắp ngừng hoạt động. Vui lòng sử dụng địa chỉ mới: <a href="https://tracnghiemhuit.onrender.com/" className="font-bold underline hover:text-red-800">tracnghiemhuit.onrender.com</a>
               </p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto px-2">
-            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="bg-amber-100 p-3 rounded-xl text-amber-600 flex-shrink-0">
-                <i className="fa-solid fa-clock-rotate-left text-xl"></i>
+            
+            <div className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm flex flex-col sm:flex-row sm:items-center gap-3 border border-blue-100 justify-between">
+              <div className="flex items-start sm:items-center gap-2">
+                <i className="fa-solid fa-circle-info mt-0.5 sm:mt-0 flex-shrink-0"></i>
+                <p>Cập nhật dữ liệu có thể mất 20-30 phút (dùng tab ẩn danh nếu chưa thấy).</p>
               </div>
-              <div>
-                <h4 className="font-bold text-amber-900 text-sm mb-0.5">Lưu ý cập nhật</h4>
-                <p className="text-amber-800 text-xs leading-relaxed">
-                  Dữ liệu cập nhật sau <span className="font-bold text-amber-950 underline decoration-amber-300">20-30 phút</span>. Nếu chưa thấy nội dung mới, hãy thử sử dụng <span className="font-semibold text-amber-900">tab ẩn danh</span>.
-                </p>
+              <div className="text-xs font-medium bg-blue-100 px-2 py-1 rounded text-blue-800 inline-flex items-center w-fit">
+                <i className="fa-solid fa-check mr-1.5"></i> Hoàn toàn miễn phí
               </div>
             </div>
-
-            <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="bg-red-100 p-3 rounded-xl text-red-600 flex-shrink-0">
-                <i className="fa-solid fa-lock text-xl"></i>
-              </div>
-              <div>
-                <h4 className="font-bold text-red-900 text-sm mb-0.5">Truy cập miễn phí</h4>
-                <p className="text-red-800 text-xs leading-relaxed">
-                  NLDK không thu bất kỳ chi phí nào. Mục địch phát triển website này giúp cho sinh viên có nguồn tài liệu ôn tập miễn phí. Không cần mua từ bất cứ bên nào.
-                </p>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pb-20">
           {subjects.map(subject => (
             <Link
               to={`/monhoc/${subject.id}`}
               key={subject.id}
               onClick={() => onSelectSubject && onSelectSubject(subject)}
-              className="bg-white p-5 rounded-xl border border-gray-200 cursor-pointer shadow-sm hover:border-blue-500 hover:shadow-md transition relative overflow-hidden group block"
+              className="bg-white p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-between group"
             >
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-50 p-3 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
-                  <i className="fa-solid fa-book text-2xl"></i>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-800 text-base truncate">{subject.ten}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">
-                      <i className="fa-solid fa-layer-group"></i> {subject.soCau || 0} câu
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2">Nhấp để ôn tập</p>
-                </div>
+              <div className="flex-1 min-w-0 pr-3">
+                <h3 className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors" title={subject.ten}>
+                  {subject.ten}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {subject.soCau || 0} câu hỏi
+                </p>
+              </div>
+              <div className="text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0">
+                <i className="fa-solid fa-chevron-right text-sm"></i>
               </div>
             </Link>
           ))}
