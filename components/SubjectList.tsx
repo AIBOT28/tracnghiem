@@ -63,7 +63,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
 
             <div className="w-full max-w-2xl bg-red-50 border-2 border-red-200 p-4 rounded-2xl text-center mb-4 shadow-sm">
               <p className="text-red-600 font-bold text-lg">
-                ⚠️ Website <span className="underline">tracnghiemhuit.vercel.app</span> sắp ngừng hoạt động!
+                Website <span className="underline">tracnghiemhuit.vercel.app</span> sắp ngừng hoạt động!
               </p>
               <p className="text-red-500 font-medium mt-1">
                 Vui lòng chuyển sang:
