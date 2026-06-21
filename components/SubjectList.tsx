@@ -7,9 +7,12 @@ interface SubjectListProps {
   onSelectSubject?: (subject: Subject) => void;
 }
 
+const PINNED_SUBJECTS_KEY = 'PINNED_SUBJECTS';
+
 const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pinnedIds, setPinnedIds] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -41,6 +44,32 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
     };
     fetchSubjects();
   }, []);
+
+  useEffect(() => {
+    const savedPinned = localStorage.getItem(PINNED_SUBJECTS_KEY);
+    if (savedPinned) {
+      try {
+        setPinnedIds(JSON.parse(savedPinned));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const togglePin = (id: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    let newPinned = [...pinnedIds];
+    if (newPinned.includes(id)) {
+      newPinned = newPinned.filter(pId => pId !== id);
+    } else {
+      newPinned.push(id);
+    }
+    setPinnedIds(newPinned);
+    localStorage.setItem(PINNED_SUBJECTS_KEY, JSON.stringify(newPinned));
+  };
+
+  const pinnedSubjects = subjects.filter(s => pinnedIds.includes(s.id));
+  const unpinnedSubjects = subjects.filter(s => !pinnedIds.includes(s.id));
 
   if (loading) {
     return (
@@ -79,32 +108,75 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pb-20">
-          {subjects.map(subject => (
-            <Link
-              to={`/monhoc/${subject.id}`}
-              key={subject.id}
-              onClick={() => onSelectSubject && onSelectSubject(subject)}
-              className="bg-white p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-between group"
-            >
-              <div className="flex-1 min-w-0 pr-3">
-                <h3 className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors" title={subject.ten}>
-                  {subject.ten}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {subject.soCau || 0} câu hỏi
-                </p>
-              </div>
-              <div className="text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0">
-                <i className="fa-solid fa-chevron-right text-sm"></i>
-              </div>
-            </Link>
-          ))}
-          {subjects.length === 0 && (
-            <div className="col-span-full text-center text-gray-500 py-10">
-              Không có dữ liệu môn học.
+        {pinnedSubjects.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2 px-1">
+              <i className="fa-solid fa-thumbtack text-blue-500"></i> Môn học đã ghim
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {pinnedSubjects.map(subject => (
+                <Link
+                  to={`/monhoc/${subject.id}`}
+                  key={subject.id}
+                  onClick={() => onSelectSubject && onSelectSubject(subject)}
+                  className="bg-white p-4 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
+                >
+                  <div className="flex-1 min-w-0 pr-3">
+                    <h3 className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors" title={subject.ten}>
+                      {subject.ten}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {subject.soCau || 0} câu hỏi
+                    </p>
+                  </div>
+                  <button 
+                    onClick={(e) => togglePin(subject.id, e)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors flex-shrink-0"
+                    title="Bỏ ghim môn học này"
+                  >
+                    <i className="fa-solid fa-thumbtack text-sm"></i>
+                  </button>
+                </Link>
+              ))}
             </div>
-          )}
+          </div>
+        )}
+
+        <div>
+          <h3 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2 px-1">
+            <i className="fa-solid fa-book-open text-gray-400"></i> Tất cả môn học
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pb-20">
+            {unpinnedSubjects.map(subject => (
+              <Link
+                to={`/monhoc/${subject.id}`}
+                key={subject.id}
+                onClick={() => onSelectSubject && onSelectSubject(subject)}
+                className="bg-white p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-between group"
+              >
+                <div className="flex-1 min-w-0 pr-3">
+                  <h3 className="font-semibold text-gray-800 text-sm truncate group-hover:text-blue-600 transition-colors" title={subject.ten}>
+                    {subject.ten}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {subject.soCau || 0} câu hỏi
+                  </p>
+                </div>
+                <button 
+                  onClick={(e) => togglePin(subject.id, e)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:bg-gray-100 hover:text-blue-500 transition-colors flex-shrink-0"
+                  title="Ghim môn học này"
+                >
+                  <i className="fa-solid fa-thumbtack text-sm"></i>
+                </button>
+              </Link>
+            ))}
+            {subjects.length === 0 && (
+              <div className="col-span-full text-center text-gray-500 py-10">
+                Không có dữ liệu môn học.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
