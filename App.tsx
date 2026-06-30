@@ -10,6 +10,7 @@ import QuizWrapper from './components/QuizWrapper';
 import HistoryView from './components/HistoryView';
 import ChapterQuestionList from './components/ChapterQuestionList';
 import HistoryDetailWrapper from './components/HistoryDetailWrapper';
+import YoutubeSubscribeDialog from './components/YoutubeSubscribeDialog';
 
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
@@ -159,6 +160,7 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AppLayout>
+        <YoutubeSubscribeDialog />
         <Routes>
           <Route path="/" element={<SubjectList onSelectSubject={() => { }} />} />
           <Route path="/monhoc/:id" element={<ModeSelection subject={{ id: 0, ten: '' }} onStart={() => { }} />} />
