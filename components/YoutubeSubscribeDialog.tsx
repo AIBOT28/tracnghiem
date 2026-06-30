@@ -35,7 +35,7 @@ const YoutubeSubscribeDialog: React.FC = () => {
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
           <i className="fa-brands fa-youtube text-red-600 text-3xl"></i>
         </div>
-        <h2 className="text-xl font-bold text-gray-800 mb-2">Ủng hộ Admin nhé! ❤️</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Ủng hộ Admin nhé!</h2>
         <p className="text-gray-600 text-sm mb-6 leading-relaxed">
           Hãy nhấn nút đăng ký kênh YouTube để giúp Admin có thêm động lực duy trì và phát triển website nhé. Cảm ơn bạn rất nhiều!
         </p>

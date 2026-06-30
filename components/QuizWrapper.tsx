@@ -95,7 +95,8 @@ const QuizWrapper: React.FC = () => {
 
   // Persist session
   useEffect(() => {
-    if (!isLoading && !isHistoryReview && subject && questionList.length > 0) {
+    const isFinished = searchParams.get('finished') === '1';
+    if (!isLoading && !isHistoryReview && !isFinished && subject && questionList.length > 0) {
       const sessionData: SessionData = {
         subject,
         mode,
@@ -108,7 +109,7 @@ const QuizWrapper: React.FC = () => {
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
     }
-  }, [isLoading, isHistoryReview, currentIndex, userAnswers, timeLeft, subject, mode, questionList, isReviewMode]);
+  }, [isLoading, isHistoryReview, currentIndex, userAnswers, timeLeft, subject, mode, questionList, isReviewMode, searchParams]);
 
   if (isLoading) {
     return (
