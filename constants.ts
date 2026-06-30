@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 export const PRIMARY_BASE_URL = 'https://backend.nguyenledangkhoa-it.workers.dev';
 export const SECONDARY_BASE_URL = 'https://backend.nguyenledangkhoa146205.workers.dev';
 
@@ -17,9 +17,7 @@ export const AUTH_API_URL = `${currentBase}/api/Auth`;
 export const MONHOC_API_URL = `${currentBase}/api/MonHocs`;
 export const CHUONG_API_URL = `${currentBase}/api/Chuongs`;
 export const CAUHOI_API_URL = `${currentBase}/api/CauHois`;
-=======
-const BASE_URL = 'https://backend.nguyenledangkhoa-it.workers.dev';
->>>>>>> a358b50f5e2dbd762e1795c84eb0c04e91e1c628
+
 
 export const SESSION_KEY = 'exam_ongoing_session';
 export const CACHE_KEY_SUBJECTS = 'danh_sach_mon_hoc';
