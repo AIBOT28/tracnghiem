@@ -128,6 +128,7 @@ const SubjectList: React.FC<SubjectListProps> = ({ onSelectSubject }) => {
                     <p className="text-xs text-gray-500 mt-1">
                       {subject.soCau || 0} câu hỏi
                     </p>
+
                   </div>
                   <button 
                     onClick={(e) => togglePin(subject.id, e)}
