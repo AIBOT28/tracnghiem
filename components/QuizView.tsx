@@ -124,6 +124,30 @@ const QuizView: React.FC<QuizViewProps> = ({
     }
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNext();
+      } else if (['1', '2', '3', '4'].includes(e.key)) {
+        const index = parseInt(e.key) - 1;
+        const currentQ = questions[currentIndex];
+        if (currentQ && currentQ.answers && currentQ.answers[index]) {
+          handleChoose(currentQ.answers[index].key);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
   const q = questions[currentIndex];
   if (!q) return <div className="p-8 text-center">Đang chuẩn bị câu hỏi...</div>;
 
